@@ -1,16 +1,14 @@
 import { createFileRoute, Outlet, useMatchRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
-import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage, EmptyState } from '@/components/common'
+import { useState } from 'react'
+import { LoadingSpinner, ErrorMessage } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Globe, Navigation, Plane } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import { MapPin } from 'lucide-react'
 import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
 import { ComparisonButton } from '@/components/airports/ComparisonButton'
 import { ComparisonPanel } from '@/components/airports/ComparisonPanel'
-import { useFavorites, useSearchHistory, useMapState } from '@/contexts/AppContext'
-import type { Airport } from '@/types'
+import { useAirportExplorer } from '@/hooks/useAirportExplorer'
 
 export const Route = createFileRoute('/airports')({
   component: AirportsExplorer,
@@ -25,83 +23,27 @@ function AirportsExplorer() {
   const matchRoute = useMatchRoute()
   const searchParams = Route.useSearch() as { code?: string }
   const initialCode = searchParams.code || ''
-  const [searchQuery, setSearchQuery] = useState(initialCode)
-  const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null)
   const [isComparisonOpen, setIsComparisonOpen] = useState(false)
   
-  const { favoriteAirports, addFavoriteAirport, removeFavoriteAirport, isFavoriteAirport } = useFavorites()
-  const { addToSearchHistory, addRecentAirport } = useSearchHistory()
-  const { mapState, setSelectedAirport: setGlobalSelectedAirport } = useMapState()
+  // Use the centralized airport explorer hook for better data flow management
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    isLoading,
+    error,
+    selectedAirport,
+    setSelectedAirport,
+    favoriteAirportCodes,
+    toggleFavorite,
+    mapState,
+  } = useAirportExplorer({ initialCode })
   
   const isExactRoute = matchRoute({ to: '/airports', exact: true })
   
   // If we're on a child route (like /airports/FLL), render the outlet
   if (!isExactRoute) {
     return <Outlet />
-  }
-  
-  // For free tier, we can only search by IATA code (3 letters) or ICAO code (4 letters)
-  const isValidIATA = searchQuery.length === 3 && /^[A-Z]{3}$/i.test(searchQuery)
-  const isValidICAO = searchQuery.length === 4 && /^[A-Z]{4}$/i.test(searchQuery)
-  
-  // Search by IATA code
-  const {
-    data: airportByIATA,
-    isLoading: isLoadingIATA,
-    error: errorIATA,
-  } = useAirportByIATA(searchQuery.toUpperCase(), {
-    enabled: isValidIATA,
-  })
-  
-  // Search by ICAO code
-  const {
-    data: airportByICAO,
-    isLoading: isLoadingICAO,
-    error: errorICAO,
-  } = useAirportByICAO(searchQuery.toUpperCase(), {
-    enabled: isValidICAO,
-  })
-  
-  // Combine results and states
-  const isLoading = isLoadingIATA || isLoadingICAO
-  const error = errorIATA || errorICAO
-  const airport = airportByIATA || airportByICAO
-  const airports = airport ? [airport] : []
-  
-  // Auto-select airport when search result changes
-  useEffect(() => {
-    if (airport && !isLoading) {
-      setSelectedAirport(airport)
-      setGlobalSelectedAirport(airport) // Sync with global state
-      addRecentAirport(airport)
-    }
-  }, [airport, isLoading, addRecentAirport, setGlobalSelectedAirport])
-  
-  // Search history is now handled directly in the AirportSearchBar component
-
-  // Helper functions for favorites
-  const getFavoriteAirports = (): string[] => {
-    return favoriteAirports.map(f => f.iata)
-  }
-
-  const toggleFavorite = (airport: Airport) => {
-    if (isFavoriteAirport(airport.iata)) {
-      removeFavoriteAirport(airport.iata)
-    } else {
-      addFavoriteAirport({
-        iata: airport.iata,
-        icao: airport.icao,
-        name: airport.name,
-        city: airport.city,
-        country: airport.country,
-      })
-    }
-  }
-
-  // Handle airport selection from map (sync local and global state)
-  const handleAirportSelect = (airport: Airport) => {
-    setSelectedAirport(airport)
-    setGlobalSelectedAirport(airport)
   }
 
   return (
@@ -192,9 +134,9 @@ function AirportsExplorer() {
             </CardHeader>
             <CardContent className="p-0">
               <MapView
-                airports={airports}
+                airports={searchResults}
                 selectedAirport={selectedAirport}
-                onAirportSelect={handleAirportSelect}
+                onAirportSelect={setSelectedAirport}
                 height="525px"
                 showControls
                 useGlobalState={true}
@@ -204,14 +146,16 @@ function AirportsExplorer() {
         </div>
         <div className="lg:col-span-1">
           <LocationList
-            airports={airports}
+            airports={searchResults}
             selectedAirport={selectedAirport}
-            onAirportSelect={handleAirportSelect}
+            onAirportSelect={setSelectedAirport}
             title="Search Results"
             height="600px"
             emptyMessage={searchQuery ? "No airports found matching your search" : "Search for airports to see them listed here"}
-            favoriteAirports={getFavoriteAirports()}
+            favoriteAirports={favoriteAirportCodes}
             onToggleFavorite={toggleFavorite}
+            useGlobalState={true}
+            showTabs={false} // Don't show tabs on main airport explorer page
           />
         </div>
       </div>
@@ -241,5 +185,3 @@ function AirportsExplorer() {
   )
 }
 
-// Add missing Button import
-import { Button } from '@/components/ui/button'

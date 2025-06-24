@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { commonAirports } from '@/data/common-airports'
 import { useSearchHistory } from '@/contexts/AppContext'
+import { eventBus, EVENTS, emitSearchStarted } from '@/lib/eventBus'
 
 interface AirportSearchBarProps {
   onSearch: (query: string) => void
@@ -162,6 +163,7 @@ export function AirportSearchBar({
     // Auto-search if valid IATA (3 letters) or ICAO (4 letters) code
     if ((newValue.length === 3 || newValue.length === 4) && /^[A-Z]+$/.test(newValue)) {
       const timer = setTimeout(() => {
+        emitSearchStarted(newValue) // Emit search started event
         onSearch(newValue)
         addToSearchHistory(newValue, 'airport')
       }, debounceMs)
@@ -175,12 +177,14 @@ export function AirportSearchBar({
     setShowSuggestions(false)
     setSelectedSuggestionIndex(-1)
     inputRef.current?.focus()
+    eventBus.emit(EVENTS.SEARCH_CLEARED) // Emit search cleared event
   }, [onSearch])
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (value.length === 3 || value.length === 4) {
       const uppercaseValue = value.toUpperCase()
+      emitSearchStarted(uppercaseValue) // Emit search started event
       onSearch(uppercaseValue)
       addToSearchHistory(uppercaseValue, 'airport')
       setShowSuggestions(false)

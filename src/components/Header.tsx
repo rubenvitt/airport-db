@@ -19,7 +19,7 @@ export function Header() {
     { to: '/', label: 'Home', icon: Home },
     { to: '/airports', label: 'Airports', icon: MapPin },
     { to: '/flights', label: 'Live Flights', icon: Plane },
-    { to: '/favorites', label: 'Favorites', icon: Heart },
+    { to: '/favorites', label: 'My Airports', icon: Heart },
     { to: '/settings', label: 'Settings', icon: Settings },
   ]
 

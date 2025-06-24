@@ -18,16 +18,7 @@ import { Route as AirportsRouteImport } from './routes/airports'
 import { Route as R404RouteImport } from './routes/_404'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FlightsFlightIdRouteImport } from './routes/flights.$flightId'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
-import { Route as DemoStoreRouteImport } from './routes/demo.store'
-import { Route as DemoSearchHistoryRouteImport } from './routes/demo.search-history'
-import { Route as DemoMapInteractionsRouteImport } from './routes/demo.map-interactions'
-import { Route as DemoLocationlistRouteImport } from './routes/demo.locationlist'
 import { Route as AirportsIataCodeRouteImport } from './routes/airports.$iataCode'
-import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
-import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
-import { Route as DemoFormSimpleRouteImport } from './routes/demo.form.simple'
-import { Route as DemoFormAddressRouteImport } from './routes/demo.form.address'
 import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
 
 const rootServerRouteImport = createServerRootRoute()
@@ -66,55 +57,10 @@ const FlightsFlightIdRoute = FlightsFlightIdRouteImport.update({
   path: '/$flightId',
   getParentRoute: () => FlightsRoute,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStoreRoute = DemoStoreRouteImport.update({
-  id: '/demo/store',
-  path: '/demo/store',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoSearchHistoryRoute = DemoSearchHistoryRouteImport.update({
-  id: '/demo/search-history',
-  path: '/demo/search-history',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoMapInteractionsRoute = DemoMapInteractionsRouteImport.update({
-  id: '/demo/map-interactions',
-  path: '/demo/map-interactions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoLocationlistRoute = DemoLocationlistRouteImport.update({
-  id: '/demo/locationlist',
-  path: '/demo/locationlist',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AirportsIataCodeRoute = AirportsIataCodeRouteImport.update({
   id: '/$iataCode',
   path: '/$iataCode',
   getParentRoute: () => AirportsRoute,
-} as any)
-const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
-  id: '/demo/start/server-funcs',
-  path: '/demo/start/server-funcs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
-  id: '/demo/start/api-request',
-  path: '/demo/start/api-request',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoFormSimpleRoute = DemoFormSimpleRouteImport.update({
-  id: '/demo/form/simple',
-  path: '/demo/form/simple',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
-  id: '/demo/form/address',
-  path: '/demo/form/address',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
   id: '/api/demo-names',
@@ -129,16 +75,7 @@ export interface FileRoutesByFullPath {
   '/flights': typeof FlightsRouteWithChildren
   '/settings': typeof SettingsRoute
   '/airports/$iataCode': typeof AirportsIataCodeRoute
-  '/demo/locationlist': typeof DemoLocationlistRoute
-  '/demo/map-interactions': typeof DemoMapInteractionsRoute
-  '/demo/search-history': typeof DemoSearchHistoryRoute
-  '/demo/store': typeof DemoStoreRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,16 +84,7 @@ export interface FileRoutesByTo {
   '/flights': typeof FlightsRouteWithChildren
   '/settings': typeof SettingsRoute
   '/airports/$iataCode': typeof AirportsIataCodeRoute
-  '/demo/locationlist': typeof DemoLocationlistRoute
-  '/demo/map-interactions': typeof DemoMapInteractionsRoute
-  '/demo/search-history': typeof DemoSearchHistoryRoute
-  '/demo/store': typeof DemoStoreRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,16 +95,7 @@ export interface FileRoutesById {
   '/flights': typeof FlightsRouteWithChildren
   '/settings': typeof SettingsRoute
   '/airports/$iataCode': typeof AirportsIataCodeRoute
-  '/demo/locationlist': typeof DemoLocationlistRoute
-  '/demo/map-interactions': typeof DemoMapInteractionsRoute
-  '/demo/search-history': typeof DemoSearchHistoryRoute
-  '/demo/store': typeof DemoStoreRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,16 +106,7 @@ export interface FileRouteTypes {
     | '/flights'
     | '/settings'
     | '/airports/$iataCode'
-    | '/demo/locationlist'
-    | '/demo/map-interactions'
-    | '/demo/search-history'
-    | '/demo/store'
-    | '/demo/tanstack-query'
     | '/flights/$flightId'
-    | '/demo/form/address'
-    | '/demo/form/simple'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,16 +115,7 @@ export interface FileRouteTypes {
     | '/flights'
     | '/settings'
     | '/airports/$iataCode'
-    | '/demo/locationlist'
-    | '/demo/map-interactions'
-    | '/demo/search-history'
-    | '/demo/store'
-    | '/demo/tanstack-query'
     | '/flights/$flightId'
-    | '/demo/form/address'
-    | '/demo/form/simple'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
   id:
     | '__root__'
     | '/'
@@ -224,16 +125,7 @@ export interface FileRouteTypes {
     | '/flights'
     | '/settings'
     | '/airports/$iataCode'
-    | '/demo/locationlist'
-    | '/demo/map-interactions'
-    | '/demo/search-history'
-    | '/demo/store'
-    | '/demo/tanstack-query'
     | '/flights/$flightId'
-    | '/demo/form/address'
-    | '/demo/form/simple'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,15 +135,6 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   FlightsRoute: typeof FlightsRouteWithChildren
   SettingsRoute: typeof SettingsRoute
-  DemoLocationlistRoute: typeof DemoLocationlistRoute
-  DemoMapInteractionsRoute: typeof DemoMapInteractionsRoute
-  DemoSearchHistoryRoute: typeof DemoSearchHistoryRoute
-  DemoStoreRoute: typeof DemoStoreRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
-  DemoFormSimpleRoute: typeof DemoFormSimpleRoute
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/demo-names': typeof ApiDemoNamesServerRoute
@@ -326,75 +209,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FlightsFlightIdRouteImport
       parentRoute: typeof FlightsRoute
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/store': {
-      id: '/demo/store'
-      path: '/demo/store'
-      fullPath: '/demo/store'
-      preLoaderRoute: typeof DemoStoreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/search-history': {
-      id: '/demo/search-history'
-      path: '/demo/search-history'
-      fullPath: '/demo/search-history'
-      preLoaderRoute: typeof DemoSearchHistoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/map-interactions': {
-      id: '/demo/map-interactions'
-      path: '/demo/map-interactions'
-      fullPath: '/demo/map-interactions'
-      preLoaderRoute: typeof DemoMapInteractionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/locationlist': {
-      id: '/demo/locationlist'
-      path: '/demo/locationlist'
-      fullPath: '/demo/locationlist'
-      preLoaderRoute: typeof DemoLocationlistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/airports/$iataCode': {
       id: '/airports/$iataCode'
       path: '/$iataCode'
       fullPath: '/airports/$iataCode'
       preLoaderRoute: typeof AirportsIataCodeRouteImport
       parentRoute: typeof AirportsRoute
-    }
-    '/demo/start/server-funcs': {
-      id: '/demo/start/server-funcs'
-      path: '/demo/start/server-funcs'
-      fullPath: '/demo/start/server-funcs'
-      preLoaderRoute: typeof DemoStartServerFuncsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/api-request': {
-      id: '/demo/start/api-request'
-      path: '/demo/start/api-request'
-      fullPath: '/demo/start/api-request'
-      preLoaderRoute: typeof DemoStartApiRequestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/form/simple': {
-      id: '/demo/form/simple'
-      path: '/demo/form/simple'
-      fullPath: '/demo/form/simple'
-      preLoaderRoute: typeof DemoFormSimpleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -440,15 +260,6 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   FlightsRoute: FlightsRouteWithChildren,
   SettingsRoute: SettingsRoute,
-  DemoLocationlistRoute: DemoLocationlistRoute,
-  DemoMapInteractionsRoute: DemoMapInteractionsRoute,
-  DemoSearchHistoryRoute: DemoSearchHistoryRoute,
-  DemoStoreRoute: DemoStoreRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
-  DemoFormSimpleRoute: DemoFormSimpleRoute,
-  DemoStartApiRequestRoute: DemoStartApiRequestRoute,
-  DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -7,6 +7,7 @@ import { LoadingSpinner } from '@/components/common'
 import { useMapState, usePreferences } from '@/contexts/AppContext'
 import type { Airport } from '@/types'
 import 'leaflet/dist/leaflet.css'
+import { useEventBus, EVENTS, emitMapMoved, emitAirportSelected } from '@/lib/eventBus'
 
 interface MapViewProps {
   airports?: Airport[]
@@ -69,6 +70,8 @@ function MapClient({
     }
     // Also call the optional callback
     onAirportSelect?.(airport)
+    // Emit selection event
+    emitAirportSelected(airport)
   }, [useGlobalState, setGlobalSelectedAirport, updateMapState, onAirportSelect])
   
   // Create custom icon for selected airport - must be called unconditionally
@@ -138,6 +141,8 @@ function MapClient({
           const newZoom = map.getZoom()
           updateMapCenter([newCenter.lat, newCenter.lng])
           updateMapZoom(newZoom)
+          // Emit map moved event
+          emitMapMoved([newCenter.lat, newCenter.lng], newZoom)
         }
         
         map.on('moveend', handleMoveEnd)
