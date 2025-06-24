@@ -1,6 +1,6 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type { DepartureArrival, FlightsResponse } from '@/types/flight'
-import { flightsApi } from '@/api/flights'
+import { flightsApi } from '@/api'
 
 // Query keys factory
 export const flightKeys = {

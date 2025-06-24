@@ -31,6 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useComparison } from '@/contexts/ComparisonContext'
 import { 
   useFavorites, 
@@ -243,8 +249,9 @@ function LocationListComponent({
       {/* Search and Filters */}
       <div className="space-y-3 px-4 pb-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" key="search-icon" />
           <Input
+            key="search-input"
             placeholder="Search airports..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -252,6 +259,7 @@ function LocationListComponent({
           />
           {searchQuery && (
             <Button
+              key="clear-search-btn"
               variant="ghost"
               size="icon"
               className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
@@ -263,7 +271,7 @@ function LocationListComponent({
         </div>
         
         <div className="flex gap-2">
-          <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+          <Select key="sort-select" value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -276,10 +284,10 @@ function LocationListComponent({
             </SelectContent>
           </Select>
           
-          <Select value={filterCountry} onValueChange={setFilterCountry}>
+          <Select key="filter-select" value={filterCountry} onValueChange={setFilterCountry}>
             <SelectTrigger className="w-[140px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Country" />
+              <Filter className="h-4 w-4 mr-2" key="filter-icon" />
+              <SelectValue placeholder="Country" key="filter-value" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Countries</SelectItem>
@@ -297,150 +305,173 @@ function LocationListComponent({
       <ScrollArea style={{ height: showTabs ? `calc(${height} - 180px)` : `calc(${height} - 120px)` }}>
         {filteredAirports.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-8">
-            <MapPin className="h-12 w-12 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground text-center px-4">{getEmptyMessage()}</p>
+            <MapPin className="h-12 w-12 text-muted-foreground mb-2" key="empty-icon" />
+            <p className="text-muted-foreground text-center px-4" key="empty-message">{getEmptyMessage()}</p>
           </div>
         ) : (
-          <div className="space-y-1 p-4">
+          <div className="space-y-2 p-4">
             {filteredAirports.map((airport) => {
               const isSelected = selectedAirport?.iata === airport.iata
               const favorite = isFavorite(airport)
               const inComparison = isInComparison(airport.icao)
               
               return (
-                <div
+                <Card
                   key={`${airport.iata}-${airport.icao}`}
                   className={cn(
-                    "p-3 rounded-lg border transition-all duration-200 cursor-pointer animate-in",
-                    "hover:bg-accent hover:border-accent-foreground/20 hover:shadow-sm",
-                    isSelected && "bg-primary/10 border-primary shadow-sm",
-                    inComparison && "ring-2 ring-primary ring-opacity-50"
+                    "p-3 transition-all duration-200 cursor-pointer",
+                    "hover:shadow-md hover:border-primary/20",
+                    isSelected && "ring-2 ring-primary shadow-md",
+                    inComparison && "ring-2 ring-blue-500"
                   )}
                   onClick={() => handleAirportSelect(airport)}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h4 className="font-semibold line-clamp-1">{airport.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {airport.city}, {airport.region}, {airport.country}
-                      </p>
+                  <div className="space-y-2">
+                    {/* Header with airport name and codes */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm leading-tight line-clamp-1">
+                          {airport.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {airport.city}, {airport.country}
+                        </p>
+                      </div>
+                      <Badge variant="default" className="font-mono text-[10px] px-1.5 py-0.5">
+                        {airport.iata}
+                      </Badge>
                     </div>
-                    <div className="flex items-center gap-1 ml-2">
-                      <Badge variant="outline" className="text-xs">{airport.iata}</Badge>
-                      <Badge variant="secondary" className="text-xs">{airport.icao}</Badge>
+                    
+                    {/* Airport info */}
+                    <div className="text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Elevation: {airport.elevation_ft?.toLocaleString() ?? 'N/A'} ft
+                      </span>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Elevation: {airport.elevation_ft.toLocaleString()} ft</span>
-                    <span>{airport.timezone}</span>
-                  </div>
-                  
-                  {showActions && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <Link to="/airports/$iataCode" params={{ iataCode: airport.iata }}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Navigation className="h-3 w-3 mr-1" />
-                          Details
-                        </Button>
-                      </Link>
-                      
-                      <Link
-                        to="/flights"
-                        search={{ airport: airport.iata }}
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Plane className="h-3 w-3 mr-1" />
-                          Flights
-                        </Button>
-                      </Link>
-                      
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${airport.latitude},${airport.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                        >
-                          <Globe className="h-3 w-3 mr-1" />
-                          Maps
-                        </Button>
-                      </a>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-7 text-xs",
-                          inComparison && "text-primary"
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (inComparison) {
-                            removeFromComparison(airport.icao)
-                          } else {
-                            addToComparison(airport)
-                          }
-                        }}
-                        disabled={!inComparison && !canAddMore}
-                        title={!inComparison && !canAddMore ? "Maximum 3 airports for comparison" : "Add to comparison"}
-                      >
-                        {inComparison ? (
-                          <Check className="h-3 w-3 mr-1" />
-                        ) : (
-                          <BarChart3 className="h-3 w-3 mr-1" />
-                        )}
-                        Compare
-                      </Button>
-                      
-                      {(useGlobalState || propOnToggleFavorite) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleToggleFavorite(airport)
-                          }}
-                        >
-                          {favorite ? (
-                            <Heart className="h-3 w-3 fill-current text-red-500" />
-                          ) : (
-                            <HeartOff className="h-3 w-3" />
+                    
+                    {/* Action buttons */}
+                    {showActions && (
+                      <div className="flex items-center gap-1 pt-2 border-t">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Link 
+                              to="/airports/$icaoCode" 
+                              params={{ icaoCode: airport.icao }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 cursor-pointer"
+                                asChild
+                              >
+                                <span>
+                                  <Navigation className="h-3.5 w-3.5" />
+                                </span>
+                              </Button>
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View Details</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                window.open(`/flights?airport=${airport.iata}`, '_blank')
+                              }}
+                            >
+                              <Plane className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View Flights</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                window.open(`https://www.google.com/maps/search/?api=1&query=${airport.latitude},${airport.longitude}`, '_blank')
+                              }}
+                            >
+                              <Globe className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Open in Maps</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={cn(
+                                "h-7 w-7 cursor-pointer",
+                                inComparison && "text-blue-600 bg-blue-50 hover:bg-blue-100"
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (inComparison) {
+                                  removeFromComparison(airport.icao)
+                                } else {
+                                  addToComparison(airport)
+                                }
+                              }}
+                              disabled={!inComparison && !canAddMore}
+                            >
+                              <BarChart3 className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{!inComparison && !canAddMore ? "Maximum 3 airports for comparison" : inComparison ? "Remove from comparison" : "Add to comparison"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        <div className="ml-auto">
+                          {(useGlobalState || propOnToggleFavorite) && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleToggleFavorite(airport)
+                                  }}
+                                >
+                                  {favorite ? (
+                                    <Heart className="h-3.5 w-3.5 fill-current text-red-500" />
+                                  ) : (
+                                    <HeartOff className="h-3.5 w-3.5" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{favorite ? "Remove from favorites" : "Add to favorites"}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
-                        </Button>
-                      )}
-                      
-                      {onAirportRemove && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs text-destructive hover:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onAirportRemove(airport)
-                          }}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
               )
             })}
           </div>
@@ -454,14 +485,15 @@ function LocationListComponent({
   }
 
   return (
-    <Card className={cn("flex flex-col", className)}>
-      <CardHeader className="pb-3">
+    <TooltipProvider>
+      <Card className={cn("flex flex-col", className)}>
+        <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            {title}
+          <CardTitle className="text-xl flex items-center gap-2" key="card-title">
+            <MapPin className="h-5 w-5" key="title-icon" />
+            <span key="title-text">{title}</span>
           </CardTitle>
-          <Badge variant="secondary">{filteredAirports.length} airports</Badge>
+          <Badge variant="secondary" key="count-badge">{filteredAirports.length} airports</Badge>
         </div>
         
         {/* Tabs for switching views when global state is enabled */}
@@ -469,26 +501,27 @@ function LocationListComponent({
           <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="mt-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="search" className="text-xs">
-                <Search className="h-3 w-3 mr-1" />
-                Search
+                <Search className="h-3 w-3 mr-1" key="search-icon" />
+                <span key="search-text">Search</span>
               </TabsTrigger>
               <TabsTrigger value="favorites" className="text-xs">
-                <Star className="h-3 w-3 mr-1" />
-                Favorites ({favoriteCount})
+                <Star className="h-3 w-3 mr-1" key="favorites-icon" />
+                <span key="favorites-text">Favorites ({favoriteCount})</span>
               </TabsTrigger>
               <TabsTrigger value="recent" className="text-xs">
-                <Clock className="h-3 w-3 mr-1" />
-                Recent ({recentCount})
+                <Clock className="h-3 w-3 mr-1" key="recent-icon" />
+                <span key="recent-text">Recent ({recentCount})</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
         )}
       </CardHeader>
       
-      <CardContent className="flex-1 p-0">
-        {renderContent()}
-      </CardContent>
-    </Card>
+        <CardContent className="flex-1 p-0">
+          {renderContent()}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   )
 }
 

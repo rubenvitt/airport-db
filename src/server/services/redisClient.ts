@@ -1,7 +1,7 @@
 // Redis client configuration and initialization
 
 import Redis from 'ioredis'
-import { StructuredLogger, jsonTransport, prettyTransport } from '@/lib/cache/observability'
+import { StructuredLogger, jsonTransport, prettyTransport } from '../../lib/cache/observability'
 
 // Load environment variables for server-side only
 if (typeof window === 'undefined') {

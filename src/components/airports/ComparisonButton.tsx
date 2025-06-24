@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,8 +10,13 @@ interface ComparisonButtonProps {
 
 export function ComparisonButton({ onClick }: ComparisonButtonProps) {
   const { comparedAirports } = useComparison()
+  const [isClient, setIsClient] = useState(false)
 
-  if (comparedAirports.length === 0) {
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient || comparedAirports.length === 0) {
     return null
   }
 

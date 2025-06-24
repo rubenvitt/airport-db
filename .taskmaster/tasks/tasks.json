@@ -1931,7 +1931,7 @@
               4
             ],
             "details": "Expose Prometheus metrics (latency, hit/miss, lock contention), adopt OpenTelemetry tracing, and prepare Grafana dashboards.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -2060,7 +2060,7 @@
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-24T12:06:01.151Z",
+      "updated": "2025-06-24T19:57:06.673Z",
       "description": "Tasks for master context"
     }
   }

@@ -24,7 +24,10 @@ export async function fetchApi<T>(
   const { params, ...fetchOptions } = options
 
   // Build URL with query parameters
-  const urlObj = new URL(url)
+  // Handle both absolute and relative URLs
+  const urlObj = url.startsWith('http://') || url.startsWith('https://') 
+    ? new URL(url)
+    : new URL(url, window.location.origin)
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {

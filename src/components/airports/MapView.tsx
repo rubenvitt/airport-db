@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/common'
 import { useMapState, usePreferences } from '@/contexts/AppContext'
+import { useTheme } from '@/hooks/use-theme'
 import 'leaflet/dist/leaflet.css'
 import { EVENTS, emitAirportSelected, emitMapMoved, useEventBus } from '@/lib/eventBus'
 
@@ -51,6 +52,7 @@ function MapClient({
   preferences: any
 }) {
   const [MapComponents, setMapComponents] = useState<any>(null)
+  const { resolvedTheme } = useTheme()
   
   // Determine which values to use based on useGlobalState prop
   const effectiveCenter = useGlobalState ? mapState.center : center
@@ -225,8 +227,14 @@ function MapClient({
           zoomControl={false}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={resolvedTheme === 'dark' 
+              ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+            url={resolvedTheme === 'dark'
+              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+            }
           />
           
           {useGlobalState && <MapEventHandler />}

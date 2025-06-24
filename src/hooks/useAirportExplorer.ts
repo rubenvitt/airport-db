@@ -39,6 +39,7 @@ export function useAirportExplorer({ initialCode = '' }: UseAirportExplorerOptio
   } = useAirportByICAO(searchQuery.toUpperCase(), {
     enabled: isValidICAO,
   })
+
   
   // Combine results
   const isLoading = isLoadingIATA || isLoadingICAO

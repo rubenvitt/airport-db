@@ -8,6 +8,7 @@ interface ErrorMessageProps {
   message: string
   error?: Error | unknown
   onRetry?: () => void
+  action?: React.ReactNode
   className?: string
   showDetails?: boolean
 }
@@ -17,6 +18,7 @@ export function ErrorMessage({
   message,
   error,
   onRetry,
+  action,
   className,
   showDetails = false,
 }: ErrorMessageProps) {
@@ -52,6 +54,8 @@ export function ErrorMessage({
               Try Again
             </Button>
           )}
+          
+          {action && <div className="mt-3">{action}</div>}
         </div>
       </AlertDescription>
     </Alert>

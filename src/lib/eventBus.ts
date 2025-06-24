@@ -58,6 +58,9 @@ class EventBusImpl implements EventBus {
 // Create singleton instance
 export const eventBus = new EventBusImpl()
 
+// Export the class as EventEmitter for compatibility
+export { EventBusImpl as EventEmitter }
+
 // Define event types for type safety
 export const EVENTS = {
   // Airport selection events

@@ -81,8 +81,8 @@ export function SearchHistoryDropdown({ children }: SearchHistoryDropdownProps) 
             {recentAirports.slice(0, 5).map((airport) => (
               <DropdownMenuItem key={airport.iata} asChild>
                 <Link
-                  to="/airports/$iataCode"
-                  params={{ iataCode: airport.iata }}
+                  to="/airports/$icaoCode"
+                  params={{ icaoCode: airport.icao }}
                   className="flex items-center gap-2"
                 >
                   <MapPin className="h-4 w-4 text-muted-foreground" />

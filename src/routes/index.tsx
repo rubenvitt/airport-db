@@ -104,7 +104,7 @@ function HomePage() {
               <Link
                 key={`${airport.iata}-${airport.icao}`}
                 to="/airports"
-                search={{ code: airport.iata }}
+                search={() => ({ q: airport.iata })}
                 className="block"
               >
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">

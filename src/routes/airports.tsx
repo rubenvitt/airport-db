@@ -1,5 +1,5 @@
-import { Outlet, createFileRoute, useMatchRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Outlet, createFileRoute, useMatchRoute, useNavigate } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
 import { MapPin } from 'lucide-react'
 import { ErrorMessage, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,14 +16,16 @@ export const Route = createFileRoute('/airports')({
   validateSearch: (search: Record<string, unknown>) => {
     return {
       code: search.code as string | undefined,
+      q: search.q as string | undefined,
     }
   },
 })
 
 function AirportsExplorer() {
   const matchRoute = useMatchRoute()
+  const navigate = useNavigate()
   const searchParams = Route.useSearch()
-  const initialCode = searchParams.code || ''
+  const initialCode = searchParams.code || searchParams.q || ''
   const [isComparisonOpen, setIsComparisonOpen] = useState(false)
   
   // Use the centralized airport explorer hook for better data flow management
@@ -39,6 +41,23 @@ function AirportsExplorer() {
     toggleFavorite,
     mapState,
   } = useAirportExplorer({ initialCode })
+  
+  // Update URL when search query changes
+  useEffect(() => {
+    if (searchQuery) {
+      navigate({
+        to: '/airports',
+        search: { q: searchQuery },
+        replace: true,
+      })
+    } else {
+      navigate({
+        to: '/airports',
+        search: {},
+        replace: true,
+      })
+    }
+  }, [searchQuery, navigate])
   
   // Add keyboard shortcuts for comparison
   useComparisonShortcuts(selectedAirport, isComparisonOpen, setIsComparisonOpen)
@@ -75,8 +94,8 @@ function AirportsExplorer() {
         <CardContent>
           <AirportSearchBar
             onSearch={setSearchQuery}
+            value={searchQuery}
             placeholder="Search by IATA or ICAO code..."
-            defaultValue={initialCode}
             isLoading={isLoading}
             autoFocus={!initialCode}
           />
@@ -95,7 +114,10 @@ function AirportsExplorer() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSearchQuery(airport.iata)}
+                    onClick={() => {
+                      console.log('Button clicked, setting searchQuery to:', airport.iata)
+                      setSearchQuery(airport.iata)
+                    }}
                     className="h-7"
                   >
                     {airport.iata}

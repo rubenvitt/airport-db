@@ -9,6 +9,7 @@ import { EVENTS, emitSearchStarted, eventBus } from '@/lib/eventBus'
 
 interface AirportSearchBarProps {
   onSearch: (query: string) => void
+  value?: string
   placeholder?: string
   defaultValue?: string
   isLoading?: boolean
@@ -27,6 +28,7 @@ interface AirportSuggestion {
 
 export function AirportSearchBar({
   onSearch,
+  value: controlledValue,
   placeholder = 'Search by IATA or ICAO code...',
   defaultValue = '',
   isLoading = false,
@@ -34,11 +36,22 @@ export function AirportSearchBar({
   debounceMs = 300,
   autoFocus = false,
 }: AirportSearchBarProps) {
-  const [value, setValue] = useState(defaultValue)
+  // Use controlled value if provided, otherwise use internal state
+  const [internalValue, setInternalValue] = useState(defaultValue)
+  const value = controlledValue !== undefined ? controlledValue : internalValue
+  const setValue = controlledValue !== undefined ? onSearch : setInternalValue
+  
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  
+  // Update internal value when defaultValue changes (only if not controlled)
+  useEffect(() => {
+    if (controlledValue === undefined) {
+      setInternalValue(defaultValue)
+    }
+  }, [defaultValue, controlledValue])
   
   // Get search history from global context
   const { searchHistory, addToSearchHistory } = useSearchHistory()
@@ -157,19 +170,26 @@ export function AirportSearchBar({
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value.toUpperCase()
     setValue(newValue)
+    if (controlledValue === undefined && onSearch) {
+      // For uncontrolled mode, also call onSearch to keep parent in sync
+      onSearch(newValue)
+    }
     setShowSuggestions(true)
     setSelectedSuggestionIndex(-1)
-    
+  }, [setValue, onSearch, controlledValue])
+
+  // Handle debounced auto-search
+  useEffect(() => {
     // Auto-search if valid IATA (3 letters) or ICAO (4 letters) code
-    if ((newValue.length === 3 || newValue.length === 4) && /^[A-Z]+$/.test(newValue)) {
+    if ((value.length === 3 || value.length === 4) && /^[A-Z]+$/.test(value)) {
       const timer = setTimeout(() => {
-        emitSearchStarted(newValue) // Emit search started event
-        onSearch(newValue)
-        addToSearchHistory(newValue, 'airport')
+        emitSearchStarted(value) // Emit search started event
+        onSearch(value)
+        addToSearchHistory(value, 'airport')
       }, debounceMs)
       return () => clearTimeout(timer)
     }
-  }, [onSearch, debounceMs, addToSearchHistory])
+  }, [value, onSearch, debounceMs, addToSearchHistory])
 
   const handleClear = useCallback(() => {
     setValue('')

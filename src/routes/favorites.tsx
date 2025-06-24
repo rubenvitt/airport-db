@@ -17,6 +17,12 @@ function FavoritesPage() {
   const { recentAirports } = useSearchHistory()
   const [favoriteAirportData, setFavoriteAirportData] = useState<Array<Airport>>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
+  
+  // Prevent hydration mismatch by waiting for client-side mount
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
   
   // Fetch full airport data for favorites
   useEffect(() => {
@@ -78,7 +84,7 @@ function FavoritesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{favoriteAirports.length}</div>
+            <div className="text-2xl font-bold">{isMounted ? favoriteAirports.length : 0}</div>
             <CardDescription className="mt-1">
               Airports you've starred for quick access
             </CardDescription>
@@ -93,7 +99,7 @@ function FavoritesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recentAirports.length}</div>
+            <div className="text-2xl font-bold">{isMounted ? recentAirports.length : 0}</div>
             <CardDescription className="mt-1">
               Airports you've viewed recently
             </CardDescription>

@@ -18,7 +18,8 @@ import { Route as AirportsRouteImport } from './routes/airports'
 import { Route as R404RouteImport } from './routes/_404'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FlightsFlightIdRouteImport } from './routes/flights.$flightId'
-import { Route as AirportsIataCodeRouteImport } from './routes/airports.$iataCode'
+import { Route as AirportsIcaoCodeRouteImport } from './routes/airports.$icaoCode'
+import { Route as AdminMonitoringRouteImport } from './routes/admin.monitoring'
 import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
 
 const rootServerRouteImport = createServerRootRoute()
@@ -57,10 +58,15 @@ const FlightsFlightIdRoute = FlightsFlightIdRouteImport.update({
   path: '/$flightId',
   getParentRoute: () => FlightsRoute,
 } as any)
-const AirportsIataCodeRoute = AirportsIataCodeRouteImport.update({
-  id: '/$iataCode',
-  path: '/$iataCode',
+const AirportsIcaoCodeRoute = AirportsIcaoCodeRouteImport.update({
+  id: '/$icaoCode',
+  path: '/$icaoCode',
   getParentRoute: () => AirportsRoute,
+} as any)
+const AdminMonitoringRoute = AdminMonitoringRouteImport.update({
+  id: '/admin/monitoring',
+  path: '/admin/monitoring',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
   id: '/api/demo-names',
@@ -74,7 +80,8 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/flights': typeof FlightsRouteWithChildren
   '/settings': typeof SettingsRoute
-  '/airports/$iataCode': typeof AirportsIataCodeRoute
+  '/admin/monitoring': typeof AdminMonitoringRoute
+  '/airports/$icaoCode': typeof AirportsIcaoCodeRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
 }
 export interface FileRoutesByTo {
@@ -83,7 +90,8 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/flights': typeof FlightsRouteWithChildren
   '/settings': typeof SettingsRoute
-  '/airports/$iataCode': typeof AirportsIataCodeRoute
+  '/admin/monitoring': typeof AdminMonitoringRoute
+  '/airports/$icaoCode': typeof AirportsIcaoCodeRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
 }
 export interface FileRoutesById {
@@ -94,7 +102,8 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/flights': typeof FlightsRouteWithChildren
   '/settings': typeof SettingsRoute
-  '/airports/$iataCode': typeof AirportsIataCodeRoute
+  '/admin/monitoring': typeof AdminMonitoringRoute
+  '/airports/$icaoCode': typeof AirportsIcaoCodeRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
 }
 export interface FileRouteTypes {
@@ -105,7 +114,8 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/flights'
     | '/settings'
-    | '/airports/$iataCode'
+    | '/admin/monitoring'
+    | '/airports/$icaoCode'
     | '/flights/$flightId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -114,7 +124,8 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/flights'
     | '/settings'
-    | '/airports/$iataCode'
+    | '/admin/monitoring'
+    | '/airports/$icaoCode'
     | '/flights/$flightId'
   id:
     | '__root__'
@@ -124,7 +135,8 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/flights'
     | '/settings'
-    | '/airports/$iataCode'
+    | '/admin/monitoring'
+    | '/airports/$icaoCode'
     | '/flights/$flightId'
   fileRoutesById: FileRoutesById
 }
@@ -135,6 +147,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   FlightsRoute: typeof FlightsRouteWithChildren
   SettingsRoute: typeof SettingsRoute
+  AdminMonitoringRoute: typeof AdminMonitoringRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/demo-names': typeof ApiDemoNamesServerRoute
@@ -209,12 +222,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FlightsFlightIdRouteImport
       parentRoute: typeof FlightsRoute
     }
-    '/airports/$iataCode': {
-      id: '/airports/$iataCode'
-      path: '/$iataCode'
-      fullPath: '/airports/$iataCode'
-      preLoaderRoute: typeof AirportsIataCodeRouteImport
+    '/airports/$icaoCode': {
+      id: '/airports/$icaoCode'
+      path: '/$icaoCode'
+      fullPath: '/airports/$icaoCode'
+      preLoaderRoute: typeof AirportsIcaoCodeRouteImport
       parentRoute: typeof AirportsRoute
+    }
+    '/admin/monitoring': {
+      id: '/admin/monitoring'
+      path: '/admin/monitoring'
+      fullPath: '/admin/monitoring'
+      preLoaderRoute: typeof AdminMonitoringRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -231,11 +251,11 @@ declare module '@tanstack/react-start/server' {
 }
 
 interface AirportsRouteChildren {
-  AirportsIataCodeRoute: typeof AirportsIataCodeRoute
+  AirportsIcaoCodeRoute: typeof AirportsIcaoCodeRoute
 }
 
 const AirportsRouteChildren: AirportsRouteChildren = {
-  AirportsIataCodeRoute: AirportsIataCodeRoute,
+  AirportsIcaoCodeRoute: AirportsIcaoCodeRoute,
 }
 
 const AirportsRouteWithChildren = AirportsRoute._addFileChildren(
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   FlightsRoute: FlightsRouteWithChildren,
   SettingsRoute: SettingsRoute,
+  AdminMonitoringRoute: AdminMonitoringRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

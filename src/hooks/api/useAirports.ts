@@ -1,6 +1,6 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type { Airport, AirportSearchParams } from '@/types/airport'
-import { airportsApi } from '@/api/airports'
+import { airportsApi } from '@/api'
 
 // Query keys factory
 export const airportKeys = {

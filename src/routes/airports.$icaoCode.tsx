@@ -4,19 +4,19 @@ import {
   Info, MapPin, Mountain, Navigation, Plane 
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useAirportByIATA } from '@/hooks/api'
+import { useAirportByICAO } from '@/hooks/api'
 import { ErrorMessage, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
-export const Route = createFileRoute('/airports/$iataCode')({
+export const Route = createFileRoute('/airports/$icaoCode')({
   component: AirportDetails,
 })
 
 function AirportDetails() {
-  const { iataCode } = Route.useParams()
+  const { icaoCode } = Route.useParams()
   const navigate = useNavigate()
   const [isFavorite, setIsFavorite] = useState(false)
   
@@ -24,16 +24,16 @@ function AirportDetails() {
     data: airport,
     isLoading,
     error,
-  } = useAirportByIATA(iataCode.toUpperCase())
+  } = useAirportByICAO(icaoCode.toUpperCase())
   
   // Check if airport is in favorites
   useEffect(() => {
     const favorites = localStorage.getItem('favoriteAirports')
     if (favorites) {
       const favoriteList = JSON.parse(favorites)
-      setIsFavorite(favoriteList.some((fav: any) => fav.iata === iataCode.toUpperCase()))
+      setIsFavorite(favoriteList.some((fav: any) => fav.icao === icaoCode.toUpperCase()))
     }
-  }, [iataCode])
+  }, [icaoCode])
   
   const toggleFavorite = () => {
     const favorites = localStorage.getItem('favoriteAirports')
@@ -41,7 +41,7 @@ function AirportDetails() {
     
     if (isFavorite) {
       // Remove from favorites
-      favoriteList = favoriteList.filter((fav: any) => fav.iata !== iataCode.toUpperCase())
+      favoriteList = favoriteList.filter((fav: any) => fav.icao !== icaoCode.toUpperCase())
     } else if (airport) {
       // Add to favorites
       favoriteList.push({
@@ -62,7 +62,7 @@ function AirportDetails() {
     return (
       <div className="container py-8 max-w-6xl mx-auto">
         <div className="flex justify-center py-12">
-          <LoadingSpinner text={`Loading details for ${iataCode}...`} />
+          <LoadingSpinner text={`Loading details for ${icaoCode}...`} />
         </div>
       </div>
     )
@@ -73,12 +73,12 @@ function AirportDetails() {
       <div className="container py-8 max-w-6xl mx-auto">
         <ErrorMessage
           title="Airport not found"
-          message={`Unable to find airport with IATA code "${iataCode}"`}
+          message={`Unable to find airport with ICAO code "${icaoCode}". Please check the code and try again.`}
           error={error}
           action={
             <Button onClick={() => navigate({ to: '/airports' })} className="mt-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Airports
+              Back to Airport Search
             </Button>
           }
         />
@@ -99,7 +99,6 @@ function AirportDetails() {
           Back to Airport Explorer
         </Button>
       </div>
-
       {/* Airport Header */}
       <div className="mb-8">
         <div className="flex items-start justify-between mb-4">
@@ -124,7 +123,6 @@ function AirportDetails() {
           </div>
         </div>
       </div>
-
       <div className="grid gap-6 md:grid-cols-2">
         {/* Location Information */}
         <Card>
@@ -184,7 +182,7 @@ function AirportDetails() {
               <div>
                 <p className="text-sm text-muted-foreground">Elevation</p>
                 <p className="font-medium">
-                  {airport.elevation_ft.toLocaleString()} ft / {Math.round(airport.elevation_ft * 0.3048).toLocaleString()} m
+                  {airport.elevation_ft?.toLocaleString() ?? 'N/A'} ft / {airport.elevation_ft ? Math.round(airport.elevation_ft * 0.3048).toLocaleString() : 'N/A'} m
                 </p>
               </div>
             </div>
@@ -286,7 +284,6 @@ function AirportDetails() {
           </CardContent>
         </Card>
       </div>
-
       {/* API Attribution */}
       <Card className="mt-6 border-muted">
         <CardContent className="pt-6">

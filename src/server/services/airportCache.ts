@@ -3,8 +3,8 @@
 import type { Redis } from 'ioredis'
 import { getRedisClient } from './redisClient'
 import { concurrencyManager } from './concurrencyManager'
-import type { Airport } from '@/types/airport'
-import type { CacheItem, CacheStats, CacheService } from '@/types/cache'
+import type { Airport } from '../../types/airport'
+import type { CacheItem, CacheStats, CacheService } from '../../types/cache'
 
 const DEFAULT_TTL = parseInt(process.env.AIRPORT_CACHE_TTL || '2592000', 10) // 30 days
 const CACHE_PREFIX = 'airport:'

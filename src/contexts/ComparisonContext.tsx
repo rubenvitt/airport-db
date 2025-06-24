@@ -15,20 +15,23 @@ const MAX_COMPARISON_AIRPORTS = 3
 const ComparisonContext = createContext<ComparisonContextType | undefined>(undefined)
 
 export function ComparisonProvider({ children }: { children: React.ReactNode }) {
-  const [comparedAirports, setComparedAirports] = useState<Array<Airport>>(() => {
-    // Check if we're in the browser
-    if (typeof window === 'undefined') {
-      return []
-    }
-    const stored = localStorage.getItem('comparedAirports')
-    return stored ? JSON.parse(stored) : []
-  })
+  const [comparedAirports, setComparedAirports] = useState<Array<Airport>>([])
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    // Load from localStorage after hydration
+    const stored = localStorage.getItem('comparedAirports')
+    if (stored) {
+      setComparedAirports(JSON.parse(stored))
+    }
+    setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (isHydrated) {
       localStorage.setItem('comparedAirports', JSON.stringify(comparedAirports))
     }
-  }, [comparedAirports])
+  }, [comparedAirports, isHydrated])
 
   const addToComparison = useCallback((airport: Airport) => {
     setComparedAirports(prev => {
