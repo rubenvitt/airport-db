@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import { Search, X, Loader2, Plane, MapPin } from 'lucide-react'
+import { Search, X, Loader2, Plane, MapPin, History } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { commonAirports } from '@/data/common-airports'
+import { useSearchHistory } from '@/contexts/AppContext'
 
 interface AirportSearchBarProps {
   onSearch: (query: string) => void
@@ -37,10 +38,40 @@ export function AirportSearchBar({
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  
+  // Get search history from global context
+  const { searchHistory, addToSearchHistory } = useSearchHistory()
+
+  // Get recent searches from history
+  const recentSearches = useMemo(() => {
+    return searchHistory
+      .filter(item => item.type === 'airport')
+      .map(item => item.query)
+      .slice(0, 5) // Show last 5 searches
+  }, [searchHistory])
 
   // Filter suggestions based on input
   const suggestions = useMemo(() => {
-    if (!value || value.length < 2) return []
+    if (!value || value.length < 2) {
+      // Show recent searches when no input
+      if (!value && recentSearches.length > 0) {
+        return recentSearches.map(query => {
+          const airport = commonAirports.find(a => a.iata === query || a.icao === query)
+          if (airport) {
+            return airport
+          }
+          // Create placeholder for searches not in common airports
+          return {
+            iata: query.length === 3 ? query : '',
+            icao: query.length === 4 ? query : '',
+            name: 'Search History',
+            city: 'Recent search',
+            country: ''
+          }
+        }).filter(Boolean).slice(0, 5) as AirportSuggestion[]
+      }
+      return []
+    }
     
     const upperValue = value.toUpperCase()
     
@@ -51,7 +82,7 @@ export function AirportSearchBar({
       airport.name.toUpperCase().includes(upperValue) ||
       airport.city.toUpperCase().includes(upperValue)
     ).slice(0, 8) // Limit to 8 suggestions
-  }, [value])
+  }, [value, recentSearches])
 
   // Handle click outside to close suggestions
   useEffect(() => {
@@ -94,7 +125,9 @@ export function AirportSearchBar({
           handleSelectSuggestion(selected)
         } else if (value.length === 3 || value.length === 4) {
           // Direct search if valid IATA or ICAO code
-          onSearch(value.toUpperCase())
+          const uppercaseValue = value.toUpperCase()
+          onSearch(uppercaseValue)
+          addToSearchHistory(uppercaseValue, 'airport')
           setShowSuggestions(false)
         }
         break
@@ -103,15 +136,22 @@ export function AirportSearchBar({
         setSelectedSuggestionIndex(-1)
         break
     }
-  }, [showSuggestions, suggestions, selectedSuggestionIndex, value, onSearch])
+  }, [showSuggestions, suggestions, selectedSuggestionIndex, value, onSearch, addToSearchHistory])
 
   const handleSelectSuggestion = useCallback((airport: AirportSuggestion) => {
     // Default to IATA code as it's shorter and more commonly used
-    setValue(airport.iata)
-    onSearch(airport.iata)
+    const searchCode = airport.iata || airport.icao
+    setValue(searchCode)
+    onSearch(searchCode)
+    
+    // Add to search history
+    if (searchCode && (searchCode.length === 3 || searchCode.length === 4)) {
+      addToSearchHistory(searchCode, 'airport')
+    }
+    
     setShowSuggestions(false)
     setSelectedSuggestionIndex(-1)
-  }, [onSearch])
+  }, [onSearch, addToSearchHistory])
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value.toUpperCase()
@@ -123,10 +163,11 @@ export function AirportSearchBar({
     if ((newValue.length === 3 || newValue.length === 4) && /^[A-Z]+$/.test(newValue)) {
       const timer = setTimeout(() => {
         onSearch(newValue)
+        addToSearchHistory(newValue, 'airport')
       }, debounceMs)
       return () => clearTimeout(timer)
     }
-  }, [onSearch, debounceMs])
+  }, [onSearch, debounceMs, addToSearchHistory])
 
   const handleClear = useCallback(() => {
     setValue('')
@@ -139,10 +180,12 @@ export function AirportSearchBar({
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (value.length === 3 || value.length === 4) {
-      onSearch(value.toUpperCase())
+      const uppercaseValue = value.toUpperCase()
+      onSearch(uppercaseValue)
+      addToSearchHistory(uppercaseValue, 'airport')
       setShowSuggestions(false)
     }
-  }, [value, onSearch])
+  }, [value, onSearch, addToSearchHistory])
 
   return (
     <form
@@ -209,18 +252,36 @@ export function AirportSearchBar({
               role="option"
               aria-selected={selectedSuggestionIndex === index}
             >
-              <Plane className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              {airport.name === 'Search History' ? (
+                <History className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              ) : (
+                <Plane className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{airport.iata}</span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">{airport.icao}</span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="truncate">{airport.name}</span>
+                  <span className="font-semibold">{airport.iata || airport.icao}</span>
+                  {airport.iata && airport.icao && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">{airport.icao}</span>
+                    </>
+                  )}
+                  {airport.name !== 'Search History' && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="truncate">{airport.name}</span>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  <span>{airport.city}, {airport.country}</span>
+                  {airport.name === 'Search History' ? (
+                    <span className="italic">Recent search</span>
+                  ) : (
+                    <>
+                      <MapPin className="h-3 w-3" />
+                      <span>{airport.city}, {airport.country}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

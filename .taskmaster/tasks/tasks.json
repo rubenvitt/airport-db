@@ -628,7 +628,7 @@
               5
             ],
             "details": "Update the search bar to dispatch actions and update the global state. Implement search history management.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1987,11 +1987,80 @@
         "dependencies": [],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Set Up End-to-End Test Suite with Cypress",
+        "description": "Introduce Cypress to run browser-level end-to-end tests covering critical user journeys and regression scenarios.",
+        "details": "1. Tooling & Installation\n   • Add Cypress v13 (latest stable) as a dev-dependency: `npm install -D cypress`\n   • Add commands to package.json: \"cypress:open\" and \"cypress:run\".\n   • Generate default folder structure with `npx cypress open`, then move it to `tests/e2e` to keep tests outside source tree.\n\n2. Configuration\n   • Create `cypress.config.ts` (TypeScript) with:\n       - `baseUrl` pointing to `http://localhost:5173` (Vite) or env-based URL.\n       - `viewportWidth/Height` (e.g. 1280×800)\n       - `video` recording enabled in CI, disabled locally.\n       - `experimentalSessionAndOrigin` true to speed up auth-related tests (if API keys are in use).\n   • Load `.env` variables (API keys, test users) through `dotenv`.\n   • Force HTTPS in CI pipeline to stay aligned with Security task (Helmet redirect) using `cypress-https` plugin or Nginx reverse proxy.\n\n3. Custom Commands\n   • Add `cypress/support/commands.ts` with helpers such as `cy.loginApiKey()`, `cy.visitAirport(id)`, `cy.switchLang('de')`.\n   • Abstract repetitive selectors via data-attributes: add `data-cy` to UI components from Task 2; update Core UI if missing.\n\n4. Test Coverage\n   a. Smoke Suite (runs on every PR)\n       - Loads home page, asserts header/footer render.\n       - Navigates via TanStack Router to /airports and /settings, asserts 200 responses.\n   b. Airport Explorer Flow\n       - Searches for “Berlin”, selects suggestion, verifies AirportDetails opens and Leaflet map displays marker.\n   c. Security Regression\n       - Ensures all requests are served over HTTPS (window.location.protocol === 'https:').\n       - Confirms CSP headers present via `cy.request('/')`.\n   d. Language Toggle\n       - Switches UI language to German and checks a translated string.\n   e. Error Boundary\n       - Intentionally trigger 404 route, expect custom 404 page (will pass once Task 14 is done but can be marked `@pending`).\n\n5. CI Integration\n   • Add GitHub Actions workflow `e2e.yml` that spins up app, runs headless Cypress in chrome and electron.\n   • Cache Cypress binary for faster builds.\n   • Upload video artifacts only on failure.\n\n6. Reporting & Maintenance\n   • Output JUnit XML for test reporters (Allure or GitHub Summary).\n   • Add `npm run cypress:update-selectors` script to lint for missing `data-cy` attributes.\n   • Document guidelines in `TESTING.md`.\n\nConsiderations\n   • Keep tests deterministic—stub network requests for 3rd-party APIs using `cy.intercept()` when not testing integration.\n   • Use `@focus` tag convention to run a single spec locally.\n   • Use Cypress Component Testing if individual UI components need browser rendering in future.",
+        "testStrategy": "1. Local Verification\n   a. Run `npm run cypress:open`, execute all specs, ensure they pass on Chrome & Firefox.\n   b. Use Cypress Dashboard (optional) to confirm screenshots/videos are captured.\n\n2. CI Pipeline\n   a. Push a branch; verify the `e2e.yml` workflow starts the app, waits on port, and all smoke tests pass under 3 minutes.\n   b. Break an assertion intentionally to confirm pipeline fails and video artifact uploads.\n\n3. Security Assertions\n   a. Disable HTTPS redirect in Helmet config and re-run tests – they must fail, proving assertion effectiveness.\n   b. Tamper with CSP header locally; test should detect missing header and fail.\n\n4. Cross-Environment Check\n   a. Run tests against staging environment via `CYPRESS_BASE_URL=https://staging.example.com npm run cypress:run`.\n   b. Confirm language toggling works with real backend data.\n\n5. Regression Guard\n   • Add the suite to release checklist; every new feature must provide/select appropriate `data-cy` selectors and at least one new E2E scenario.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          12
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install Cypress and Generate Project Scaffolding",
+            "description": "Add Cypress as a dev-dependency, create baseline folder structure outside the src tree, and add NPM scripts for interactive and headless runs.",
+            "dependencies": [],
+            "details": "• Run `npm install -D cypress@latest`\n• Execute `npx cypress open` once to auto-create the default structure, then move the generated `cypress` folder to `tests/e2e`\n• Add to package.json:\n   \"cypress:open\": \"cypress open --project tests/e2e\",\n   \"cypress:run\": \"cypress run --project tests/e2e\"\n• Commit the new directory layout and sample spec to verify the install.",
+            "status": "pending",
+            "testStrategy": "Run `npm run cypress:open`; ensure the Cypress GUI launches and sample tests pass against the blank URL."
+          },
+          {
+            "id": 2,
+            "title": "Create Central Cypress Configuration",
+            "description": "Introduce `cypress.config.ts` with environment-specific baseUrl, viewport, video settings, HTTPS enforcement, Dotenv loading, and experimental session flag.",
+            "dependencies": [
+              1
+            ],
+            "details": "• Place `cypress.config.ts` in project root; set `projectRoot` to `tests/e2e`\n• Configure:\n   baseUrl: `process.env.E2E_BASE_URL || 'http://localhost:5173'`\n   viewportWidth/Height: 1280×800\n   video: `process.env.CI === 'true'`\n   experimentalSessionAndOrigin: true\n• Load env vars via `require('dotenv').config({ path: '.env' })`\n• Force HTTPS in CI by adding `setupNodeEvents` to install `cypress-https` plugin when `process.env.CI === 'true'`.\n• Add a `dataSession` strategy if API keys need caching to speed up re-auth.",
+            "status": "pending",
+            "testStrategy": "Run `npx cypress run --config-file cypress.config.ts --env CI=true` and confirm HTTPS enforcement error appears if local server is not HTTPS."
+          },
+          {
+            "id": 3,
+            "title": "Implement Custom Cypress Commands & Selector Conventions",
+            "description": "Create reusable commands for login, navigation helpers, and enforce `data-cy` selectors across UI components.",
+            "dependencies": [
+              2
+            ],
+            "details": "• In `tests/e2e/support/commands.ts` implement:\n   cy.loginApiKey() – POST to /api/login with key from env and set cookies\n   cy.visitAirport(id) – navigates to `/airports/{id}`\n   cy.switchLang(lang) – clicks locale toggle and waits for i18n readiness\n• Extend `cypress/support/index.ts` to import commands file\n• Add ESLint rule or custom script `npm run cypress:update-selectors` to scan JSX/TSX for elements missing `data-cy`\n• Update shared UI library to expose a `dataCy` prop and retrofit key components.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for the selector-lint script; in Cypress, call the new commands in a throwaway spec to verify cookie set, navigation, and language toggling."
+          },
+          {
+            "id": 4,
+            "title": "Author Core End-to-End Test Suites",
+            "description": "Create comprehensive spec files covering smoke, airport explorer flow, security regression, language toggle, and error boundary scenarios.",
+            "dependencies": [
+              3
+            ],
+            "details": "• tests/e2e/specs/smoke.cy.ts – home page render, header/footer presence, router navigation\n• tests/e2e/specs/airportExplorer.cy.ts – search “Berlin”, ensure marker & details\n• tests/e2e/specs/security.cy.ts – assert HTTPS, CSP headers via cy.request\n• tests/e2e/specs/languageToggle.cy.ts – switch to German, verify translation\n• tests/e2e/specs/errorBoundary.cy.ts – visit unknown route; mark with `it.skip()` or `@pending` until feature lands\n• Use `cy.intercept()` to stub 3rd-party API calls except when specifically testing integrations\n• Tag smoke tests with `@smoke` and configure in config to run on every PR.",
+            "status": "pending",
+            "testStrategy": "Run `npm run cypress:run --env grepTags=@smoke` locally; confirm only smoke specs run and all pass. Run full suite to ensure total coverage without flaky failures."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Cypress into CI Pipeline with Reporting",
+            "description": "Add GitHub Actions workflow to spin up application, run headless Cypress in multiple browsers, cache binaries, record videos on failure, and publish JUnit results.",
+            "dependencies": [
+              4
+            ],
+            "details": "• Create `.github/workflows/e2e.yml`\n   - Checkout code\n   - Setup Node and cache `~/.cache/Cypress`\n   - Run `npm ci && npm run build && npx vite preview &`\n   - Execute `npm run cypress:run --browser chrome,electron --reporter junit --reporter-options mochaFile=reports/junit-[hash].xml`\n   - Upload `videos/` and `screenshots/` as artifacts only on failure\n• Add a job summary step to parse JUnit XML and annotate failures\n• Update branch protection to require CI pass before merge\n• Document process in `TESTING.md` with local vs CI instructions.",
+            "status": "pending",
+            "testStrategy": "Push a branch with a deliberately failing spec; verify workflow fails, uploads artifacts, and GitHub UI shows JUnit annotations. Remove failure and confirm green build."
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-24T10:21:57.462Z",
+      "updated": "2025-06-24T10:36:20.964Z",
       "description": "Tasks for master context"
     }
   }

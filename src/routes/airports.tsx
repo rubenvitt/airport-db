@@ -77,12 +77,7 @@ function AirportsExplorer() {
     }
   }, [airport, isLoading, addRecentAirport, setGlobalSelectedAirport])
   
-  // Add to search history when searching
-  useEffect(() => {
-    if (searchQuery && (isValidIATA || isValidICAO)) {
-      addToSearchHistory(searchQuery, 'airport')
-    }
-  }, [searchQuery, isValidIATA, isValidICAO, addToSearchHistory])
+  // Search history is now handled directly in the AirportSearchBar component
 
   // Helper functions for favorites
   const getFavoriteAirports = (): string[] => {
