@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { MapPin, Globe, Navigation, Plane } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
+import { useFavorites, useSearchHistory } from '@/contexts/AppContext'
 import type { Airport } from '@/types'
 
 export const Route = createFileRoute('/airports')({
@@ -23,6 +24,9 @@ function AirportsExplorer() {
   const initialCode = searchParams.code || ''
   const [searchQuery, setSearchQuery] = useState(initialCode)
   const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null)
+  
+  const { favoriteAirports, addFavoriteAirport, removeFavoriteAirport, isFavoriteAirport } = useFavorites()
+  const { addToSearchHistory, addRecentAirport } = useSearchHistory()
   
   // For free tier, we can only search by IATA code (3 letters) or ICAO code (4 letters)
   const isValidIATA = searchQuery.length === 3 && /^[A-Z]{3}$/i.test(searchQuery)
@@ -56,50 +60,34 @@ function AirportsExplorer() {
   useEffect(() => {
     if (airport && !isLoading) {
       setSelectedAirport(airport)
+      addRecentAirport(airport)
     }
-  }, [airport, isLoading])
+  }, [airport, isLoading, addRecentAirport])
+  
+  // Add to search history when searching
+  useEffect(() => {
+    if (searchQuery && (isValidIATA || isValidICAO)) {
+      addToSearchHistory(searchQuery, 'airport')
+    }
+  }, [searchQuery, isValidIATA, isValidICAO, addToSearchHistory])
 
   // Helper functions for favorites
   const getFavoriteAirports = (): string[] => {
-    const saved = localStorage.getItem('favoriteAirports')
-    if (saved) {
-      const favorites = JSON.parse(saved) as Array<{ iata: string }>
-      return favorites.map(f => f.iata)
-    }
-    return []
+    return favoriteAirports.map(f => f.iata)
   }
 
   const toggleFavorite = (airport: Airport) => {
-    const saved = localStorage.getItem('favoriteAirports')
-    let favorites: Array<{
-      iata: string
-      icao: string
-      name: string
-      city: string
-      country: string
-      addedAt: string
-    }> = saved ? JSON.parse(saved) : []
-
-    const existingIndex = favorites.findIndex(f => f.iata === airport.iata)
-    
-    if (existingIndex >= 0) {
-      // Remove from favorites
-      favorites.splice(existingIndex, 1)
+    if (isFavoriteAirport(airport.iata)) {
+      removeFavoriteAirport(airport.iata)
     } else {
-      // Add to favorites
-      favorites.push({
+      addFavoriteAirport({
         iata: airport.iata,
         icao: airport.icao,
         name: airport.name,
         city: airport.city,
         country: airport.country,
-        addedAt: new Date().toISOString(),
       })
     }
-
-    localStorage.setItem('favoriteAirports', JSON.stringify(favorites))
-    // Force re-render
-    setSelectedAirport(selectedAirport)
   }
 
   return (

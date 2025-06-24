@@ -1,72 +1,32 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/common'
 import { Heart, MapPin, Plane, Trash2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { useFavorites } from '@/contexts/AppContext'
 
 export const Route = createFileRoute('/favorites')({
   component: Favorites,
 })
 
-interface FavoriteAirport {
-  iata: string
-  icao: string
-  name: string
-  city: string
-  country: string
-  addedAt: string
-}
-
-interface FavoriteFlight {
-  callsign: string
-  icao24: string
-  origin_country: string
-  addedAt: string
-}
-
 function Favorites() {
-  const [favoriteAirports, setFavoriteAirports] = useState<FavoriteAirport[]>([])
-  const [favoriteFlights, setFavoriteFlights] = useState<FavoriteFlight[]>([])
-
-  // Load favorites from localStorage on mount
-  useEffect(() => {
-    const savedAirports = localStorage.getItem('favoriteAirports')
-    const savedFlights = localStorage.getItem('favoriteFlights')
-    
-    if (savedAirports) {
-      setFavoriteAirports(JSON.parse(savedAirports))
-    }
-    
-    if (savedFlights) {
-      setFavoriteFlights(JSON.parse(savedFlights))
-    }
-  }, [])
-
-  const removeAirport = (iata: string) => {
-    const updated = favoriteAirports.filter(airport => airport.iata !== iata)
-    setFavoriteAirports(updated)
-    localStorage.setItem('favoriteAirports', JSON.stringify(updated))
-  }
-
-  const removeFlight = (icao24: string) => {
-    const updated = favoriteFlights.filter(flight => flight.icao24 !== icao24)
-    setFavoriteFlights(updated)
-    localStorage.setItem('favoriteFlights', JSON.stringify(updated))
-  }
-
-  const clearAllFavorites = () => {
-    if (confirm('Are you sure you want to clear all favorites?')) {
-      setFavoriteAirports([])
-      setFavoriteFlights([])
-      localStorage.removeItem('favoriteAirports')
-      localStorage.removeItem('favoriteFlights')
-    }
-  }
+  const {
+    favoriteAirports,
+    favoriteFlights,
+    removeFavoriteAirport,
+    removeFavoriteFlight,
+    clearAllFavorites
+  } = useFavorites()
 
   const hasFavorites = favoriteAirports.length > 0 || favoriteFlights.length > 0
+  
+  const handleClearAll = () => {
+    if (confirm('Are you sure you want to clear all favorites?')) {
+      clearAllFavorites()
+    }
+  }
 
   return (
     <div className="container py-8 max-w-6xl mx-auto">
@@ -81,7 +41,7 @@ function Favorites() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={clearAllFavorites}
+              onClick={handleClearAll}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Clear All
@@ -157,7 +117,7 @@ function Favorites() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeAirport(airport.iata)}
+                            onClick={() => removeFavoriteAirport(airport.iata)}
                             className="text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -208,7 +168,7 @@ function Favorites() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeFlight(flight.icao24)}
+                            onClick={() => removeFavoriteFlight(flight.icao24)}
                             className="text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />

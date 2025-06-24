@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Plane, MapPin, Moon, Sun, Menu, X, Heart, Settings, Home, Monitor } from 'lucide-react'
+import { Plane, MapPin, Moon, Sun, Menu, X, Heart, Settings, Home, Monitor, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { useTheme } from '@/hooks/use-theme'
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { SearchHistoryDropdown } from '@/components/common'
 
 export function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -50,6 +51,18 @@ export function Header() {
 
         {/* Right side actions */}
         <div className="flex items-center space-x-2">
+          {/* Search History */}
+          <SearchHistoryDropdown>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              aria-label="Search history"
+            >
+              <Clock className="h-4 w-4" />
+            </Button>
+          </SearchHistoryDropdown>
+          
           {/* Theme selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

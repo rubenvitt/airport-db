@@ -11,6 +11,7 @@ import { Header } from '../components/Header'
 import Footer from '../components/Footer'
 import { ErrorBoundary } from '../components/common'
 import { initializeSecurity, validateApiKeys } from '../utils/security-init'
+import { AppProvider } from '../contexts/AppContext'
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
 
@@ -84,20 +85,22 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <ErrorBoundary>
-        <div className="min-h-screen flex flex-col">
-          <Header />
+      <AppProvider>
+        <ErrorBoundary>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            
+            <Footer />
+          </div>
           
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          
-          <Footer />
-        </div>
-        
-        <TanStackRouterDevtools />
-        <TanStackQueryLayout />
-      </ErrorBoundary>
+          <TanStackRouterDevtools />
+          <TanStackQueryLayout />
+        </ErrorBoundary>
+      </AppProvider>
     </RootDocument>
   )
 }
