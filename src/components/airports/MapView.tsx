@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { MapPin, Navigation2, ZoomIn, ZoomOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,43 +16,44 @@ interface MapViewProps {
   showControls?: boolean
 }
 
-export function MapView({
+// Client-only wrapper component
+function MapClient({
   airports = [],
   selectedAirport,
   onAirportSelect,
-  center = [39.8283, -98.5795], // Center of USA
+  center = [39.8283, -98.5795],
   zoom = 4,
   height = '500px',
   showControls = true,
 }: MapViewProps) {
-  const [isClient, setIsClient] = useState(false)
   const [MapComponents, setMapComponents] = useState<any>(null)
 
   useEffect(() => {
-    setIsClient(true)
-    
-    // Dynamically import Leaflet and React-Leaflet only on client side
     const loadMapComponents = async () => {
-      const L = await import('leaflet')
-      const ReactLeaflet = await import('react-leaflet')
-      
-      // Fix Leaflet's default icon paths
-      delete (L.default.Icon.Default.prototype as any)._getIconUrl
-      L.default.Icon.Default.mergeOptions({
-        iconRetinaUrl: '/leaflet/marker-icon-2x.png',
-        iconUrl: '/leaflet/marker-icon.png',
-        shadowUrl: '/leaflet/marker-shadow.png',
-      })
-      
-      setMapComponents({ L: L.default, ...ReactLeaflet })
+      try {
+        const [L, ReactLeaflet] = await Promise.all([
+          import('leaflet'),
+          import('react-leaflet')
+        ])
+        
+        // Fix Leaflet's default icon paths
+        delete (L.default.Icon.Default.prototype as any)._getIconUrl
+        L.default.Icon.Default.mergeOptions({
+          iconRetinaUrl: '/leaflet/marker-icon-2x.png',
+          iconUrl: '/leaflet/marker-icon.png',
+          shadowUrl: '/leaflet/marker-shadow.png',
+        })
+        
+        setMapComponents({ L: L.default, ...ReactLeaflet })
+      } catch (error) {
+        console.error('Failed to load map components:', error)
+      }
     }
     
-    if (typeof window !== 'undefined') {
-      loadMapComponents()
-    }
+    loadMapComponents()
   }, [])
 
-  if (!isClient || !MapComponents) {
+  if (!MapComponents) {
     return (
       <Card className="overflow-hidden">
         <div className="relative flex items-center justify-center" style={{ height }}>
@@ -126,14 +127,16 @@ export function MapView({
   const mapZoom = selectedAirport ? 13 : zoom
 
   // Create custom icon for selected airport
-  const selectedIcon = new L.Icon({
-    iconUrl: '/leaflet/marker-icon-red.png',
-    shadowUrl: '/leaflet/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-  })
+  const selectedIcon = useMemo(() => {
+    return L ? new L.Icon({
+      iconUrl: '/leaflet/marker-icon-red.png',
+      shadowUrl: '/leaflet/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    }) : null
+  }, [L])
 
   return (
     <Card className="overflow-hidden">
@@ -160,7 +163,7 @@ export function MapView({
               <Marker
                 key={`${airport.iata}-${airport.icao}`}
                 position={[airport.latitude, airport.longitude]}
-                icon={isSelected ? selectedIcon : undefined}
+                icon={isSelected && selectedIcon ? selectedIcon : undefined}
                 eventHandlers={{
                   click: () => {
                     onAirportSelect?.(airport)
@@ -202,4 +205,25 @@ export function MapView({
       </div>
     </Card>
   )
+}
+
+// Export a component that only renders on client
+export function MapView(props: MapViewProps) {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  if (!mounted) {
+    return (
+      <Card className="overflow-hidden">
+        <div className="relative flex items-center justify-center" style={{ height: props.height || '500px' }}>
+          <LoadingSpinner text="Loading map..." />
+        </div>
+      </Card>
+    )
+  }
+  
+  return <MapClient {...props} />
 }
