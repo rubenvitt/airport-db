@@ -9,7 +9,7 @@ import { Link } from '@tanstack/react-router'
 import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
 import { ComparisonButton } from '@/components/airports/ComparisonButton'
 import { ComparisonPanel } from '@/components/airports/ComparisonPanel'
-import { useFavorites, useSearchHistory } from '@/contexts/AppContext'
+import { useFavorites, useSearchHistory, useMapState } from '@/contexts/AppContext'
 import type { Airport } from '@/types'
 
 export const Route = createFileRoute('/airports')({
@@ -31,6 +31,7 @@ function AirportsExplorer() {
   
   const { favoriteAirports, addFavoriteAirport, removeFavoriteAirport, isFavoriteAirport } = useFavorites()
   const { addToSearchHistory, addRecentAirport } = useSearchHistory()
+  const { mapState, setSelectedAirport: setGlobalSelectedAirport } = useMapState()
   
   const isExactRoute = matchRoute({ to: '/airports', exact: true })
   
@@ -71,9 +72,10 @@ function AirportsExplorer() {
   useEffect(() => {
     if (airport && !isLoading) {
       setSelectedAirport(airport)
+      setGlobalSelectedAirport(airport) // Sync with global state
       addRecentAirport(airport)
     }
-  }, [airport, isLoading, addRecentAirport])
+  }, [airport, isLoading, addRecentAirport, setGlobalSelectedAirport])
   
   // Add to search history when searching
   useEffect(() => {
@@ -99,6 +101,12 @@ function AirportsExplorer() {
         country: airport.country,
       })
     }
+  }
+
+  // Handle airport selection from map (sync local and global state)
+  const handleAirportSelect = (airport: Airport) => {
+    setSelectedAirport(airport)
+    setGlobalSelectedAirport(airport)
   }
 
   return (
@@ -172,19 +180,38 @@ function AirportsExplorer() {
       {/* Map and Location List Section */}
       <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <MapView
-            airports={airports}
-            selectedAirport={selectedAirport}
-            onAirportSelect={setSelectedAirport}
-            height="600px"
-            showControls
-          />
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Airport Map</CardTitle>
+                  <CardDescription className="text-sm">
+                    Click on markers to view airport details
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="gap-1">
+                  <MapPin className="h-3 w-3" />
+                  Interactive Map
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <MapView
+                airports={airports}
+                selectedAirport={selectedAirport}
+                onAirportSelect={handleAirportSelect}
+                height="525px"
+                showControls
+                useGlobalState={true}
+              />
+            </CardContent>
+          </Card>
         </div>
         <div className="lg:col-span-1">
           <LocationList
             airports={airports}
             selectedAirport={selectedAirport}
-            onAirportSelect={setSelectedAirport}
+            onAirportSelect={handleAirportSelect}
             title="Search Results"
             height="600px"
             emptyMessage={searchQuery ? "No airports found matching your search" : "Search for airports to see them listed here"}

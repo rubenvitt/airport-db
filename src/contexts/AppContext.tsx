@@ -31,6 +31,12 @@ interface UserPreferences {
   defaultView: 'map' | 'list' | 'split'
 }
 
+interface MapState {
+  center: [number, number]
+  zoom: number
+  selectedAirport: Airport | null
+}
+
 interface AppState {
   // Favorites
   favoriteAirports: FavoriteAirport[]
@@ -39,6 +45,9 @@ interface AppState {
   // Search
   searchHistory: SearchHistoryItem[]
   recentAirports: Airport[]
+  
+  // Map State
+  mapState: MapState
   
   // UI State
   userPreferences: UserPreferences
@@ -71,6 +80,12 @@ interface AppContextType extends AppState {
   updatePreferences: (preferences: Partial<UserPreferences>) => void
   toggleTheme: () => void
   
+  // Map actions
+  updateMapCenter: (center: [number, number]) => void
+  updateMapZoom: (zoom: number) => void
+  setSelectedAirport: (airport: Airport | null) => void
+  updateMapState: (state: Partial<MapState>) => void
+  
   // UI actions
   toggleSidebar: () => void
   setActiveView: (view: AppState['activeView']) => void
@@ -84,6 +99,11 @@ const defaultState: AppState = {
   favoriteFlights: [],
   searchHistory: [],
   recentAirports: [],
+  mapState: {
+    center: [39.8283, -98.5795], // Center of USA
+    zoom: 4,
+    selectedAirport: null,
+  },
   userPreferences: {
     theme: 'system',
     mapStyle: 'standard',
@@ -105,6 +125,7 @@ const STORAGE_KEYS = {
   FAVORITE_FLIGHTS: 'favoriteFlights',
   SEARCH_HISTORY: 'searchHistory',
   RECENT_AIRPORTS: 'recentAirports',
+  MAP_STATE: 'mapState',
   USER_PREFERENCES: 'userPreferences',
   SIDEBAR_STATE: 'sidebarOpen',
 } as const
@@ -141,6 +162,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const savedRecent = localStorage.getItem(STORAGE_KEYS.RECENT_AIRPORTS)
     if (savedRecent) {
       savedState.recentAirports = JSON.parse(savedRecent)
+    }
+    
+    // Load map state
+    const savedMapState = localStorage.getItem(STORAGE_KEYS.MAP_STATE)
+    if (savedMapState) {
+      savedState.mapState = JSON.parse(savedMapState)
     }
     
     // Load preferences
@@ -182,6 +209,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(STORAGE_KEYS.RECENT_AIRPORTS, JSON.stringify(state.recentAirports))
     }
   }, [state.recentAirports])
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.MAP_STATE, JSON.stringify(state.mapState))
+    }
+  }, [state.mapState])
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -341,6 +374,47 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }))
   }, [])
   
+  // Map action implementations
+  const updateMapCenter = useCallback((center: [number, number]) => {
+    setState(prev => ({
+      ...prev,
+      mapState: {
+        ...prev.mapState,
+        center
+      }
+    }))
+  }, [])
+  
+  const updateMapZoom = useCallback((zoom: number) => {
+    setState(prev => ({
+      ...prev,
+      mapState: {
+        ...prev.mapState,
+        zoom
+      }
+    }))
+  }, [])
+  
+  const setSelectedAirport = useCallback((airport: Airport | null) => {
+    setState(prev => ({
+      ...prev,
+      mapState: {
+        ...prev.mapState,
+        selectedAirport: airport
+      }
+    }))
+  }, [])
+  
+  const updateMapState = useCallback((mapState: Partial<MapState>) => {
+    setState(prev => ({
+      ...prev,
+      mapState: {
+        ...prev.mapState,
+        ...mapState
+      }
+    }))
+  }, [])
+  
   const value: AppContextType = {
     ...state,
     addFavoriteAirport,
@@ -355,6 +429,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addRecentAirport,
     updatePreferences,
     toggleTheme,
+    updateMapCenter,
+    updateMapZoom,
+    setSelectedAirport,
+    updateMapState,
     toggleSidebar,
     setActiveView,
     setLoading,
@@ -410,5 +488,16 @@ export function useSearchHistory() {
     addToSearchHistory: context.addToSearchHistory,
     clearSearchHistory: context.clearSearchHistory,
     addRecentAirport: context.addRecentAirport,
+  }
+}
+
+export function useMapState() {
+  const context = useApp()
+  return {
+    mapState: context.mapState,
+    updateMapCenter: context.updateMapCenter,
+    updateMapZoom: context.updateMapZoom,
+    setSelectedAirport: context.setSelectedAirport,
+    updateMapState: context.updateMapState,
   }
 }

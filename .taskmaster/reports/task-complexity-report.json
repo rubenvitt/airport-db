@@ -1,9 +1,9 @@
 {
 	"meta": {
-		"generatedAt": "2025-06-24T08:16:13.247Z",
-		"tasksAnalyzed": 10,
-		"totalTasks": 16,
-		"analysisCount": 16,
+		"generatedAt": "2025-06-24T10:19:13.834Z",
+		"tasksAnalyzed": 11,
+		"totalTasks": 17,
+		"analysisCount": 17,
 		"thresholdScore": 5,
 		"projectName": "Taskmaster",
 		"usedResearch": false
@@ -62,80 +62,88 @@
 			"taskTitle": "Implement Airport Explorer Feature",
 			"complexityScore": 8,
 			"recommendedSubtasks": 15,
-			"expansionPrompt": "Decompose the Airport Explorer feature into granular UI, state-management, data-layer, and QA subtasks. Cover component scaffolding, API contract definition, unit/integration test plans, accessibility reviews, and deployment checklist.",
-			"reasoning": "Requires search, filtering, map integration, comparison logic, and global state; multiple interactive components and performance considerations push complexity high."
+			"expansionPrompt": "Break down Airport Explorer into granular engineering tasks covering: advanced search UX (debounced queries, API integration), filter logic (country/region/size), result list virtualization, map-overlay interactions, comparison data model, accessibility, analytics hooks, E2E Cypress tests, performance profiling, and deployment readiness.",
+			"reasoning": "Large feature touching multiple domains (state management, maps, search, comparison UI). Requires coordination across components, data flows, and UX testing, driving high complexity."
 		},
 		{
 			"taskId": 7,
 			"taskTitle": "Develop Live Flight Tracker",
 			"complexityScore": 9,
 			"recommendedSubtasks": 18,
-			"expansionPrompt": "Break down the Live Flight Tracker into subtasks for real-time data ingestion, map rendering layers, performance optimizations, resilience (reconnect/back-pressure), UX polish, and exhaustive testing (load, stress, e2e).",
-			"reasoning": "Combines WebSockets, large real-time datasets, spatial indexing, high-frequency UI updates, and performance tuning, making it one of the most complex features."
+			"expansionPrompt": "Create subtasks for Live Flight Tracker including: WebSocket layer with reconnection/back-pressure, flight data normalization, spatial indexing, map clustering & LOD rendering, path decay animations, search/autocomplete service, Arrivals/Departures boards, performance benchmarking, security/throttling, and monitoring/alerting.",
+			"reasoning": "Real-time data handling, map visualization of thousands of objects, performance/streaming concerns, and complex UI interactions make this one of the most intricate tasks."
 		},
 		{
 			"taskId": 8,
 			"taskTitle": "Implement Dashboard & Analytics",
 			"complexityScore": 7,
 			"recommendedSubtasks": 12,
-			"expansionPrompt": "Split the Dashboard & Analytics work into data ETL, statistical computation, individual chart components, cross-filtering interactions, persistence layer, and visualization performance tasks.",
-			"reasoning": "Involves heavy data processing, multiple visualization types, and optimization for large datasets, though without real-time constraints."
+			"expansionPrompt": "Expand Dashboard & Analytics into tasks for: data ingestion pipeline, stats algorithms (busiest airports, delay patterns), reusable chart wrappers, theming & responsiveness, favorites CRUD, history pagination, large-dataset memoization, accessibility compliance, and unit/E2E test suites.",
+			"reasoning": "Mixes data processing with rich visualization; moderate algorithmic work plus UX polish and performance optimization."
 		},
 		{
 			"taskId": 9,
 			"taskTitle": "Enhance User Experience and Responsiveness",
 			"complexityScore": 6,
 			"recommendedSubtasks": 11,
-			"expansionPrompt": "Expand UX enhancements into layout audits, responsive refactors, animation storyboards, gesture libraries, performance metrics collection, and regression testing tasks.",
-			"reasoning": "Covers broad UI improvements and mobile gestures but leverages established libraries; medium complexity."
+			"expansionPrompt": "Detail subtasks for UX enhancement: global responsiveness audit, Tailwind refactor, mobile nav implementation, gesture library evaluation, skeleton/component loaders, list virtualization, framer-motion animation library upgrade, Core Web Vitals monitoring, and documentation.",
+			"reasoning": "Primarily front-end refactor and polish; multiple moving parts but well-contained domain, yielding moderate complexity."
 		},
 		{
 			"taskId": 10,
 			"taskTitle": "Implement Offline Capability",
-			"complexityScore": 6,
-			"recommendedSubtasks": 12,
-			"expansionPrompt": "Detail subtasks for service worker setup, IndexedDB schema, sync conflict resolution, background sync, offline UI states, and offline QA scenarios.",
-			"reasoning": "Offline support touches many layers (storage, sync, UI) but uses well-known PWA patterns."
+			"complexityScore": 7,
+			"recommendedSubtasks": 13,
+			"expansionPrompt": "Split Offline Capability into: service-worker scaffold, IndexedDB schema, caching strategies per data type, sync conflict algorithms, background sync jobs, offline UI indicators, action queue, asset optimization, cross-browser testing, and security review.",
+			"reasoning": "Requires deep PWA knowledge, data sync logic, and robust testing across offline scenarios—complex but bounded."
 		},
 		{
 			"taskId": 11,
 			"taskTitle": "Implement Multi-language Support",
-			"complexityScore": 4,
-			"recommendedSubtasks": 8,
-			"expansionPrompt": "Outline tasks for i18n setup, translation file management, dynamic loading, component refactors, RTL audits, and automated locale testing.",
-			"reasoning": "Mostly configuration and string replacement with limited architectural impact; comparatively lower complexity."
+			"complexityScore": 5,
+			"recommendedSubtasks": 9,
+			"expansionPrompt": "Decompose i18n work: library bootstrap, language detection hook, translation JSON structure, extraction script, pluralization rules, RTL layout audit, dynamic namespace loading, i18n middleware for API responses, and QA translation review.",
+			"reasoning": "Straightforward but touches every UI string and needs careful testing; complexity sits mid-range."
 		},
 		{
 			"taskId": 13,
 			"taskTitle": "Optimize Performance",
 			"complexityScore": 8,
 			"recommendedSubtasks": 14,
-			"expansionPrompt": "Create subtasks for baseline metrics, code splitting, asset optimization, memory profiling, algorithmic refactors, worker offloading, and performance regression gates.",
-			"reasoning": "Requires systemic profiling and optimizations across front-end, API, and build pipeline; high but bounded complexity."
+			"expansionPrompt": "Create tasks for performance drive: bundle analysis & code-split plan, React memoization sweep, workerization of heavy tasks, TanStack Query tuning, virtual scrolling integration, Lighthouse regression CI, server-side caching, and documentation of gains.",
+			"reasoning": "Performance work spans front-end, back-end, and infra; iterative measurement/optimization cycle adds significant complexity."
 		},
 		{
 			"taskId": 14,
 			"taskTitle": "Implement Error Handling and Monitoring",
-			"complexityScore": 5,
+			"complexityScore": 6,
 			"recommendedSubtasks": 10,
-			"expansionPrompt": "Divide the work into error taxonomy, global boundaries, logging adapters, external monitoring integration, user-facing error UX, and chaos testing.",
-			"reasoning": "Touches both client and server but follows standard patterns; moderate effort."
+			"expansionPrompt": "Outline subtasks for robust error handling: global boundary component, custom HTTP error pages, winston transport config, Sentry DSN setup, user feedback modal, graceful degradation patterns, health/status endpoint, alerting dashboards, and chaos testing.",
+			"reasoning": "Requires integration across stack plus monitoring setup; not algorithmically hard but cross-cutting and critical."
 		},
 		{
 			"taskId": 15,
 			"taskTitle": "Implement Analytics and Success Metrics Tracking",
-			"complexityScore": 5,
-			"recommendedSubtasks": 9,
-			"expansionPrompt": "Break into subtasks for KPI definition, analytics SDK integration, event schema governance, A/B framework setup, privacy/GDPR compliance, and stakeholder dashboards.",
-			"reasoning": "Multiple integrations and reporting requirements yet largely configuration-centric; medium complexity."
+			"complexityScore": 6,
+			"recommendedSubtasks": 10,
+			"expansionPrompt": "Break analytics into: KPI definition workshop, GA4 baseline integration, event schema design, engagement metric computations, A/B testing harness, privacy/GDPR audit, stakeholder dashboards, automated data quality tests, and release playbook.",
+			"reasoning": "Mainly configuration and data plumbing; moderate scope with some strategic planning elements."
 		},
 		{
 			"taskId": 16,
 			"taskTitle": "Implement Backend Airport Data Caching",
-			"complexityScore": 5,
-			"recommendedSubtasks": 8,
-			"expansionPrompt": "Expand into subtasks covering Redis setup, cache API development, concurrency control, observability metrics, fallback logic, security hardening, and automated tests.",
-			"reasoning": "Well-scoped backend improvement with known tooling; moderate complexity mainly around race conditions and observability."
+			"complexityScore": 7,
+			"recommendedSubtasks": 9,
+			"expansionPrompt": "Expand caching work: Redis infrastructure setup, cache API module, TTL & eviction policies, distributed lock for stampede protection, observability metrics, fallback strategy, security hardening, load testing script, and runbooks.",
+			"reasoning": "Back-end focused with infra considerations and concurrency safeguards; notable complexity but well-defined domain."
+		},
+		{
+			"taskId": 17,
+			"taskTitle": "Add Top Margin to Global Page Layout",
+			"complexityScore": 2,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Create micro-tasks: update layout component with responsive margin & safe-area padding, add visual regression tests, update style guide/docs and changelog.",
+			"reasoning": "Simple styling change with minimal risk; low technical complexity but still needs testing and documentation."
 		}
 	]
 }

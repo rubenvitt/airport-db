@@ -615,8 +615,8 @@
               1,
               5
             ],
-            "details": "Update the map component to read and update the global state. Implement state-driven marker placement and map center/zoom.",
-            "status": "pending",
+            "details": "Update the map component to read and update the global state. Implement state-driven marker placement and map center/zoom.\n<info added on 2025-06-24T10:10:59.313Z>\nSuccessfully integrated Map component with state management. Implementation includes:\n\n- Enhanced AppContext with MapState interface (center, zoom, selectedAirport)\n- Added map-specific actions (updateMapCenter, updateMapZoom, setSelectedAirport, updateMapState)\n- Implemented localStorage persistence for map preferences\n- Created useMapState hook for convenient access\n\nMapView Component updates:\n- Added useGlobalState prop to enable/disable state integration\n- Integrated with AppContext via useMapState and usePreferences hooks\n- Added real-time map state synchronization\n- Enhanced airport selection handling to update global state\n\nAirports Route integration:\n- Integrated useMapState hook for global map state access\n- Enhanced airport selection to sync both local and global state\n- Coordinated selection handling between map and location list\n\nState persistence implemented for map center, zoom preferences, and selected airport state across sessions. Maintained backward compatibility with optional useGlobalState prop and local state fallback.\n</info added on 2025-06-24T10:10:59.313Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -664,8 +664,8 @@
             "dependencies": [
               6
             ],
-            "details": "Add click handlers for adding new locations. Implement drag-and-drop functionality for existing markers. Add info windows for markers.",
-            "status": "pending",
+            "details": "Add click handlers for adding new locations. Implement drag-and-drop functionality for existing markers. Add info windows for markers.\n<info added on 2025-06-24T10:21:51.774Z>\nSuccessfully implemented enhanced user interactions for the map component:\n\n1. **Enhanced MapView Component**:\n   - Added new props for handling map clicks (onMapClick)\n   - Added props for enabling marker dragging (allowMarkerDrag, onMarkerDragEnd)\n   - Implemented MapClickHandler component using useMapEvents\n   - Enhanced marker configuration to support draggable markers with dragend event handlers\n\n2. **Improved Info Windows (Popups)**:\n   - Enhanced popup design with better styling and layout\n   - Added badges for IATA/ICAO codes\n   - Improved information display with justified layout\n   - Added coordinates display\n   - Added drag instructions when in drag mode\n   - Better visual hierarchy with proper spacing\n\n3. **Created Map Interactions Demo Page**:\n   - New demo route at /demo/map-interactions\n   - Three interaction modes: Normal, Click to Add, Drag Markers\n   - Visual feedback for different interaction modes\n   - Real-time updates showing clicked locations and dragged positions\n   - Interactive airport list showing current markers\n\n4. **Enhanced Main Airport Explorer UI**:\n   - Wrapped map in a Card component with header for better presentation\n   - Added descriptive text and interactive badge\n   - Improved visual consistency with the rest of the UI\n\nThe map now supports:\n- Click handlers for adding new locations (when enabled)\n- Drag-and-drop functionality for repositioning markers\n- Enhanced info windows with better information display\n- Mode-based interactions for different use cases\n</info added on 2025-06-24T10:21:51.774Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1976,11 +1976,22 @@
             "testStrategy": ""
           }
         ]
+      },
+      {
+        "id": 17,
+        "title": "Add Top Margin to Global Page Layout",
+        "description": "Introduce adequate top margin to the main layout so content is no longer flush against the browser edge on all viewports.",
+        "details": "1. Locate the global layout wrapper (e.g. `components/Layout.tsx` or `layouts/MainLayout.tsx`).\n2. Add a spacing token to the top of the wrapper:\n   • CSS-Modules: `.main { margin-top: var(--space-lg); }`\n   • Tailwind: `<main className=\"mt-8 lg:mt-12\">`\n   • Styled-Components: `margin-top: ${({ theme }) => theme.space.lg};`\n3. Respect device safe-areas using `padding-top: env(safe-area-inset-top);` so iOS notch devices are handled.\n4. Ensure the change is responsive:  32 px mobile, 48 px tablet+, configurable through the design-system spacing scale.\n5. Update design tokens if none exist: add `--space-header-offset` to `src/styles/tokens.css` and reference it instead of raw pixel values.\n6. Verify no layout shifts are introduced by checking CLS (Cumulative Layout Shift) in Lighthouse.\n7. Update storybook layout stories (if present) to include the new margin.\n8. Document the change in `docs/styleguide/layout.md` and announce it in the changelog.",
+        "testStrategy": "1. Manual visual check in Chrome, Safari, Firefox at 320 px, 768 px, 1280 px widths—content must have consistent top spacing.\n2. Percy/Chromatic visual regression: add a snapshot of a representative page; build must fail on unexpected diff.\n3. Jest/React Testing Library snapshot for `Layout` component: ensure `style=\"margin-top:` or the relevant class is present.\n4. Lighthouse audit: verify CLS remains ≤ 0.1 after the change.\n5. Cross-device test on an iPhone X simulator to confirm `env(safe-area-inset-top)` is applied and no content is hidden beneath the notch.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-24T09:02:29.919Z",
+      "updated": "2025-06-24T10:21:57.462Z",
       "description": "Tasks for master context"
     }
   }
