@@ -20,10 +20,6 @@ export function SearchHistoryDropdown({ children }: SearchHistoryDropdownProps) 
   
   const hasHistory = searchHistory.length > 0 || recentAirports.length > 0
   
-  if (!hasHistory) {
-    return <>{children}</>
-  }
-  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -34,7 +30,13 @@ export function SearchHistoryDropdown({ children }: SearchHistoryDropdownProps) 
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        {searchHistory.length > 0 && (
+        {!hasHistory ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            No search history yet. Start searching for airports!
+          </div>
+        ) : (
+          <>
+            {searchHistory.length > 0 && (
           <>
             <DropdownMenuLabel className="flex items-center justify-between">
               Recent Searches
@@ -95,6 +97,8 @@ export function SearchHistoryDropdown({ children }: SearchHistoryDropdownProps) 
               </DropdownMenuItem>
             ))}
           </>
+        )}
+        </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

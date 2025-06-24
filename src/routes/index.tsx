@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage, SearchBar } from '@/components/common'
+import { LoadingSpinner, ErrorMessage } from '@/components/common'
+import { AirportSearchBar } from '@/components/airports'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Plane, MapPin, Globe, Map } from 'lucide-react'
@@ -64,9 +65,9 @@ function HomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SearchBar
+          <AirportSearchBar
             onSearch={setSearchQuery}
-            placeholder="Enter IATA (LAX) or ICAO (KLAX) code"
+            placeholder="Search by IATA or ICAO code..."
             isLoading={isLoading}
             autoFocus
           />

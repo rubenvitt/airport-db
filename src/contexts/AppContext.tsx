@@ -113,6 +113,11 @@ const STORAGE_KEYS = {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   // Initialize state from localStorage
   const [state, setState] = useState<AppState>(() => {
+    // Check if we're in the browser
+    if (typeof window === 'undefined') {
+      return defaultState
+    }
+    
     const savedState: Partial<AppState> = {}
     
     // Load favorites
@@ -155,27 +160,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   // Persist state changes to localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.FAVORITE_AIRPORTS, JSON.stringify(state.favoriteAirports))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.FAVORITE_AIRPORTS, JSON.stringify(state.favoriteAirports))
+    }
   }, [state.favoriteAirports])
   
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.FAVORITE_FLIGHTS, JSON.stringify(state.favoriteFlights))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.FAVORITE_FLIGHTS, JSON.stringify(state.favoriteFlights))
+    }
   }, [state.favoriteFlights])
   
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(state.searchHistory))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(state.searchHistory))
+    }
   }, [state.searchHistory])
   
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.RECENT_AIRPORTS, JSON.stringify(state.recentAirports))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.RECENT_AIRPORTS, JSON.stringify(state.recentAirports))
+    }
   }, [state.recentAirports])
   
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.USER_PREFERENCES, JSON.stringify(state.userPreferences))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.USER_PREFERENCES, JSON.stringify(state.userPreferences))
+    }
   }, [state.userPreferences])
   
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SIDEBAR_STATE, JSON.stringify(state.isSidebarOpen))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.SIDEBAR_STATE, JSON.stringify(state.isSidebarOpen))
+    }
   }, [state.isSidebarOpen])
   
   // Action implementations

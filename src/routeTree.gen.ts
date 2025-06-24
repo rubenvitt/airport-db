@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FlightsFlightIdRouteImport } from './routes/flights.$flightId'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as DemoStoreRouteImport } from './routes/demo.store'
+import { Route as DemoSearchHistoryRouteImport } from './routes/demo.search-history'
 import { Route as DemoLocationlistRouteImport } from './routes/demo.locationlist'
 import { Route as AirportsIataCodeRouteImport } from './routes/airports.$iataCode'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
@@ -74,6 +75,11 @@ const DemoStoreRoute = DemoStoreRouteImport.update({
   path: '/demo/store',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoSearchHistoryRoute = DemoSearchHistoryRouteImport.update({
+  id: '/demo/search-history',
+  path: '/demo/search-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoLocationlistRoute = DemoLocationlistRouteImport.update({
   id: '/demo/locationlist',
   path: '/demo/locationlist',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/airports/$iataCode': typeof AirportsIataCodeRoute
   '/demo/locationlist': typeof DemoLocationlistRoute
+  '/demo/search-history': typeof DemoSearchHistoryRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/airports/$iataCode': typeof AirportsIataCodeRoute
   '/demo/locationlist': typeof DemoLocationlistRoute
+  '/demo/search-history': typeof DemoSearchHistoryRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/airports/$iataCode': typeof AirportsIataCodeRoute
   '/demo/locationlist': typeof DemoLocationlistRoute
+  '/demo/search-history': typeof DemoSearchHistoryRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/flights/$flightId': typeof FlightsFlightIdRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/airports/$iataCode'
     | '/demo/locationlist'
+    | '/demo/search-history'
     | '/demo/store'
     | '/demo/tanstack-query'
     | '/flights/$flightId'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/airports/$iataCode'
     | '/demo/locationlist'
+    | '/demo/search-history'
     | '/demo/store'
     | '/demo/tanstack-query'
     | '/flights/$flightId'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/airports/$iataCode'
     | '/demo/locationlist'
+    | '/demo/search-history'
     | '/demo/store'
     | '/demo/tanstack-query'
     | '/flights/$flightId'
@@ -220,6 +232,7 @@ export interface RootRouteChildren {
   FlightsRoute: typeof FlightsRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   DemoLocationlistRoute: typeof DemoLocationlistRoute
+  DemoSearchHistoryRoute: typeof DemoSearchHistoryRoute
   DemoStoreRoute: typeof DemoStoreRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
@@ -314,6 +327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStoreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/search-history': {
+      id: '/demo/search-history'
+      path: '/demo/search-history'
+      fullPath: '/demo/search-history'
+      preLoaderRoute: typeof DemoSearchHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/locationlist': {
       id: '/demo/locationlist'
       path: '/demo/locationlist'
@@ -401,6 +421,7 @@ const rootRouteChildren: RootRouteChildren = {
   FlightsRoute: FlightsRouteWithChildren,
   SettingsRoute: SettingsRoute,
   DemoLocationlistRoute: DemoLocationlistRoute,
+  DemoSearchHistoryRoute: DemoSearchHistoryRoute,
   DemoStoreRoute: DemoStoreRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
