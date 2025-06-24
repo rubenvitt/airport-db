@@ -9,6 +9,7 @@ import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
 import { ComparisonButton } from '@/components/airports/ComparisonButton'
 import { ComparisonPanel } from '@/components/airports/ComparisonPanel'
 import { useAirportExplorer } from '@/hooks/useAirportExplorer'
+import { useComparisonShortcuts } from '@/hooks/useComparisonShortcuts'
 
 export const Route = createFileRoute('/airports')({
   component: AirportsExplorer,
@@ -38,6 +39,9 @@ function AirportsExplorer() {
     toggleFavorite,
     mapState,
   } = useAirportExplorer({ initialCode })
+  
+  // Add keyboard shortcuts for comparison
+  useComparisonShortcuts(selectedAirport, isComparisonOpen, setIsComparisonOpen)
   
   const isExactRoute = matchRoute({ to: '/airports', exact: true })
   

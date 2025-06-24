@@ -1,5 +1,5 @@
-import React from 'react'
-import { X } from 'lucide-react'
+import React, { useState } from 'react'
+import { X, BarChart3, Table } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -13,6 +13,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useComparison } from '@/contexts/ComparisonContext'
 import type { Airport } from '@/types/airport'
+import { ComparisonChart } from './ComparisonChart'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface ComparisonPanelProps {
   open: boolean
@@ -21,6 +23,7 @@ interface ComparisonPanelProps {
 
 export function ComparisonPanel({ open, onOpenChange }: ComparisonPanelProps) {
   const { comparedAirports, removeFromComparison, clearComparison } = useComparison()
+  const [viewMode, setViewMode] = useState<'table' | 'charts'>('table')
 
   const formatElevation = (elevation: number) => {
     return `${elevation.toLocaleString()} ft (${Math.round(elevation * 0.3048)} m)`
@@ -49,6 +52,9 @@ export function ComparisonPanel({ open, onOpenChange }: ComparisonPanelProps) {
           <SheetTitle>Compare Airports</SheetTitle>
           <SheetDescription>
             Compare up to 3 airports side by side. Click the X button to remove an airport from comparison.
+            <div className="mt-2 text-xs text-muted-foreground">
+              <span className="font-medium">Keyboard shortcuts:</span> Cmd/Ctrl+K (toggle panel) • Cmd/Ctrl+Enter (add/remove selected) • Cmd/Ctrl+Shift+C (clear all)
+            </div>
           </SheetDescription>
         </SheetHeader>
 
@@ -57,42 +63,63 @@ export function ComparisonPanel({ open, onOpenChange }: ComparisonPanelProps) {
             No airports selected for comparison
           </div>
         ) : (
-          <ScrollArea className="h-[calc(100vh-200px)] mt-6">
-            <div className="relative">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {comparedAirports.map((airport) => (
-                  <div key={airport.icao} className="relative">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                      onClick={() => removeFromComparison(airport.icao)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <div className="border rounded-lg p-4 space-y-3">
-                      <div className="font-semibold text-lg truncate">
-                        {airport.name}
-                      </div>
-                      <Separator />
-                      {properties.map((prop) => (
-                        <div key={prop.key} className="space-y-1">
-                          <div className="text-sm text-muted-foreground">{prop.label}</div>
-                          <div className="font-medium">
-                            {prop.getValue
-                              ? prop.getValue(airport)
-                              : prop.format
-                              ? prop.format(airport[prop.key as keyof Airport])
-                              : airport[prop.key as keyof Airport]}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <>
+            <div className="flex justify-center mt-4">
+              <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'table' | 'charts')}>
+                <TabsList>
+                  <TabsTrigger value="table">
+                    <Table className="h-4 w-4 mr-2" />
+                    Table View
+                  </TabsTrigger>
+                  <TabsTrigger value="charts">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Chart View
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-          </ScrollArea>
+
+            <ScrollArea className="h-[calc(100vh-250px)] mt-4">
+              {viewMode === 'table' ? (
+                <div className="relative">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {comparedAirports.map((airport) => (
+                      <div key={airport.icao} className="relative">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                          onClick={() => removeFromComparison(airport.icao)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="border rounded-lg p-4 space-y-3">
+                          <div className="font-semibold text-lg truncate">
+                            {airport.name}
+                          </div>
+                          <Separator />
+                          {properties.map((prop) => (
+                            <div key={prop.key} className="space-y-1">
+                              <div className="text-sm text-muted-foreground">{prop.label}</div>
+                              <div className="font-medium">
+                                {prop.getValue
+                                  ? prop.getValue(airport)
+                                  : prop.format
+                                  ? prop.format(airport[prop.key as keyof Airport])
+                                  : airport[prop.key as keyof Airport]}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <ComparisonChart airports={comparedAirports} />
+              )}
+            </ScrollArea>
+          </>
         )}
 
         {comparedAirports.length > 0 && (
