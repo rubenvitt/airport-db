@@ -14,7 +14,9 @@ import {
   Heart,
   HeartOff,
   Filter,
-  X
+  X,
+  BarChart3,
+  Check
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import type { Airport } from '@/types'
@@ -26,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useComparison } from '@/contexts/ComparisonContext'
 
 interface LocationListProps {
   airports: Airport[]
@@ -59,6 +62,8 @@ export function LocationList({
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('name')
   const [filterCountry, setFilterCountry] = useState<string>('all')
+  
+  const { addToComparison, removeFromComparison, isInComparison, canAddMore } = useComparison()
 
   // Get unique countries for filter
   const countries = Array.from(new Set(airports.map(a => a.country))).sort()
@@ -172,6 +177,7 @@ export function LocationList({
               {filteredAirports.map((airport) => {
                 const isSelected = selectedAirport?.iata === airport.iata
                 const favorite = isFavorite(airport)
+                const inComparison = isInComparison(airport.icao)
                 
                 return (
                   <div
@@ -179,7 +185,8 @@ export function LocationList({
                     className={cn(
                       "p-3 rounded-lg border transition-all cursor-pointer",
                       "hover:bg-accent hover:border-accent-foreground/20",
-                      isSelected && "bg-primary/10 border-primary"
+                      isSelected && "bg-primary/10 border-primary",
+                      inComparison && "ring-2 ring-primary ring-opacity-50"
                     )}
                     onClick={() => onAirportSelect?.(airport)}
                   >
@@ -246,11 +253,37 @@ export function LocationList({
                           </Button>
                         </a>
                         
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn(
+                            "h-7 text-xs",
+                            inComparison && "text-primary"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (inComparison) {
+                              removeFromComparison(airport.icao)
+                            } else {
+                              addToComparison(airport)
+                            }
+                          }}
+                          disabled={!inComparison && !canAddMore}
+                          title={!inComparison && !canAddMore ? "Maximum 3 airports for comparison" : "Add to comparison"}
+                        >
+                          {inComparison ? (
+                            <Check className="h-3 w-3 mr-1" />
+                          ) : (
+                            <BarChart3 className="h-3 w-3 mr-1" />
+                          )}
+                          Compare
+                        </Button>
+                        
                         {onToggleFavorite && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 text-xs ml-auto"
+                            className="h-7 text-xs"
                             onClick={(e) => {
                               e.stopPropagation()
                               onToggleFavorite(airport)

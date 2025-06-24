@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { MapPin, Globe, Navigation, Plane } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
+import { ComparisonButton } from '@/components/airports/ComparisonButton'
+import { ComparisonPanel } from '@/components/airports/ComparisonPanel'
 import { useFavorites, useSearchHistory } from '@/contexts/AppContext'
 import type { Airport } from '@/types'
 
@@ -32,6 +34,7 @@ function AirportsExplorer() {
   const initialCode = searchParams.code || ''
   const [searchQuery, setSearchQuery] = useState(initialCode)
   const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null)
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false)
   
   const { favoriteAirports, addFavoriteAirport, removeFavoriteAirport, isFavoriteAirport } = useFavorites()
   const { addToSearchHistory, addRecentAirport } = useSearchHistory()
@@ -206,6 +209,12 @@ function AirportsExplorer() {
           <LoadingSpinner text="Searching airports..." />
         </div>
       )}
+      
+      {/* Comparison Button */}
+      <ComparisonButton onClick={() => setIsComparisonOpen(true)} />
+      
+      {/* Comparison Panel */}
+      <ComparisonPanel open={isComparisonOpen} onOpenChange={setIsComparisonOpen} />
     </div>
   )
 }
