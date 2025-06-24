@@ -23,13 +23,6 @@ export const Route = createFileRoute('/airports')({
 
 function AirportsExplorer() {
   const matchRoute = useMatchRoute()
-  const isExactRoute = matchRoute({ to: '/airports', exact: true })
-  
-  // If we're on a child route (like /airports/FLL), render the outlet
-  if (!isExactRoute) {
-    return <Outlet />
-  }
-  
   const searchParams = Route.useSearch() as { code?: string }
   const initialCode = searchParams.code || ''
   const [searchQuery, setSearchQuery] = useState(initialCode)
@@ -38,6 +31,13 @@ function AirportsExplorer() {
   
   const { favoriteAirports, addFavoriteAirport, removeFavoriteAirport, isFavoriteAirport } = useFavorites()
   const { addToSearchHistory, addRecentAirport } = useSearchHistory()
+  
+  const isExactRoute = matchRoute({ to: '/airports', exact: true })
+  
+  // If we're on a child route (like /airports/FLL), render the outlet
+  if (!isExactRoute) {
+    return <Outlet />
+  }
   
   // For free tier, we can only search by IATA code (3 letters) or ICAO code (4 letters)
   const isValidIATA = searchQuery.length === 3 && /^[A-Z]{3}$/i.test(searchQuery)
