@@ -1,6 +1,6 @@
-// Flight API client for OpenSky Network
+// Flight API client for OpenSky Network with caching
 
-import { fetchApi } from './base'
+import { cachedFetch } from './cachedFetch'
 import { API_CONFIG } from './config'
 import type {
   DepartureArrival,
@@ -46,11 +46,16 @@ export const flightsApi = {
       )
     }
 
-    const response = await fetchApi<FlightsResponse>(
+    const response = await cachedFetch<FlightsResponse>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.allStates}`,
       {
         headers: getAuthHeaders(),
         params: bbox,
+        cache: {
+          ttl: 30 * 1000, // 30 seconds for real-time flight data
+          persist: false, // Don't persist real-time data
+          staleWhileRevalidate: 10 * 1000, // Serve stale for 10s while fetching
+        },
       },
     )
     return response
@@ -76,11 +81,15 @@ export const flightsApi = {
     }
 
     const timestamp = time || Math.floor(Date.now() / 1000) - 1800 // 30 min ago
-    const track = await fetchApi<FlightTrack>(
+    const track = await cachedFetch<FlightTrack>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.tracks}`,
       {
         headers: getAuthHeaders(),
         params: { icao24, time: timestamp },
+        cache: {
+          ttl: 5 * 60 * 1000, // 5 minutes for flight tracks
+          persist: true,
+        },
       },
     )
     return track
@@ -107,11 +116,15 @@ export const flightsApi = {
       )
     }
 
-    const flights = await fetchApi<Array<DepartureArrival>>(
+    const flights = await cachedFetch<Array<DepartureArrival>>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.aircraft}`,
       {
         headers: getAuthHeaders(),
         params: { icao24, begin, end },
+        cache: {
+          ttl: 60 * 60 * 1000, // 1 hour for historical flight data
+          persist: true,
+        },
       },
     )
     return flights
@@ -138,11 +151,16 @@ export const flightsApi = {
       )
     }
 
-    const arrivals = await fetchApi<Array<DepartureArrival>>(
+    const arrivals = await cachedFetch<Array<DepartureArrival>>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.arrival}`,
       {
         headers: getAuthHeaders(),
         params: { airport, begin, end },
+        cache: {
+          ttl: 5 * 60 * 1000, // 5 minutes for recent arrivals
+          persist: true,
+          staleWhileRevalidate: 60 * 1000, // 1 minute stale grace period
+        },
       },
     )
     return arrivals
@@ -169,11 +187,16 @@ export const flightsApi = {
       )
     }
 
-    const departures = await fetchApi<Array<DepartureArrival>>(
+    const departures = await cachedFetch<Array<DepartureArrival>>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.departure}`,
       {
         headers: getAuthHeaders(),
         params: { airport, begin, end },
+        cache: {
+          ttl: 5 * 60 * 1000, // 5 minutes for recent departures
+          persist: true,
+          staleWhileRevalidate: 60 * 1000, // 1 minute stale grace period
+        },
       },
     )
     return departures

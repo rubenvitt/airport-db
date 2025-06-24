@@ -1,6 +1,6 @@
-// Airport API client
+// Airport API client with caching support
 
-import { fetchApi } from './base'
+import { cachedFetch } from './cachedFetch'
 import { API_CONFIG, hasApiKey } from './config'
 import type { Airport, AirportSearchParams } from '@/types/airport'
 import { RateLimiter } from '@/utils/security'
@@ -44,13 +44,18 @@ export const airportsApi = {
       console.warn('Free tier only supports IATA and ICAO code searches')
     }
     
-    const airports = await fetchApi<Array<Airport>>(
+    const airports = await cachedFetch<Array<Airport>>(
       `${API_CONFIG.apiNinjas.baseUrl}${API_CONFIG.apiNinjas.endpoints.airports}`,
       {
         headers: {
           'X-Api-Key': API_CONFIG.apiNinjas.key,
         },
         params: freeParams,
+        cache: {
+          ttl: 7 * 24 * 60 * 60 * 1000, // 7 days for airport data
+          persist: true,
+          priority: 'high',
+        },
       },
     )
 
