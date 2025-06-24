@@ -1,14 +1,14 @@
 // Flight API client for OpenSky Network
 
-import type {
-  FlightState,
-  FlightsResponse,
-  FlightTrack,
-  DepartureArrival,
-} from '@/types/flight'
 import { fetchApi } from './base'
-import { RateLimiter } from '@/utils/security'
 import { API_CONFIG } from './config'
+import type {
+  DepartureArrival,
+  FlightState,
+  FlightTrack,
+  FlightsResponse,
+} from '@/types/flight'
+import { RateLimiter } from '@/utils/security'
 
 // Client-side rate limiter for OpenSky Network
 // Anonymous: 10 calls/minute, Authenticated: 1000 calls/minute
@@ -97,7 +97,7 @@ export const flightsApi = {
     icao24: string,
     begin: number,
     end: number,
-  ): Promise<DepartureArrival[]> {
+  ): Promise<Array<DepartureArrival>> {
     // Check rate limit before making the request
     if (!rateLimiter.canMakeRequest()) {
       const resetTime = rateLimiter.getResetTime()
@@ -107,7 +107,7 @@ export const flightsApi = {
       )
     }
 
-    const flights = await fetchApi<DepartureArrival[]>(
+    const flights = await fetchApi<Array<DepartureArrival>>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.aircraft}`,
       {
         headers: getAuthHeaders(),
@@ -128,7 +128,7 @@ export const flightsApi = {
     airport: string,
     begin: number,
     end: number,
-  ): Promise<DepartureArrival[]> {
+  ): Promise<Array<DepartureArrival>> {
     // Check rate limit before making the request
     if (!rateLimiter.canMakeRequest()) {
       const resetTime = rateLimiter.getResetTime()
@@ -138,7 +138,7 @@ export const flightsApi = {
       )
     }
 
-    const arrivals = await fetchApi<DepartureArrival[]>(
+    const arrivals = await fetchApi<Array<DepartureArrival>>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.arrival}`,
       {
         headers: getAuthHeaders(),
@@ -159,7 +159,7 @@ export const flightsApi = {
     airport: string,
     begin: number,
     end: number,
-  ): Promise<DepartureArrival[]> {
+  ): Promise<Array<DepartureArrival>> {
     // Check rate limit before making the request
     if (!rateLimiter.canMakeRequest()) {
       const resetTime = rateLimiter.getResetTime()
@@ -169,7 +169,7 @@ export const flightsApi = {
       )
     }
 
-    const departures = await fetchApi<DepartureArrival[]>(
+    const departures = await fetchApi<Array<DepartureArrival>>(
       `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.departure}`,
       {
         headers: getAuthHeaders(),

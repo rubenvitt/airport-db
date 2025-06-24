@@ -1,16 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate  } from '@tanstack/react-router'
+import { 
+  ArrowLeft, Clock, Compass, Flag, Gauge, Heart, 
+  Info, MapPin, Navigation, Plane, RefreshCw, TrendingUp
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useFlightByIcao24, useFlightTrack } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage } from '@/components/common'
+import { ErrorMessage, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Plane, Heart, ArrowLeft, Navigation, Clock, TrendingUp, 
-  Gauge, Compass, Flag, Info, RefreshCw, MapPin
-} from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
 
 export const Route = createFileRoute('/flights/$flightId')({
   component: FlightDetails,

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 interface Toast {
   id: string
@@ -8,7 +8,7 @@ interface Toast {
 }
 
 export function useToast() {
-  const [toasts, setToasts] = useState<Toast[]>([])
+  const [toasts, setToasts] = useState<Array<Toast>>([])
 
   const toast = useCallback((toast: Omit<Toast, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9)

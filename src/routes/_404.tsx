@@ -1,8 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate  } from '@tanstack/react-router'
+import { AlertCircle, ArrowLeft, Home, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { AlertCircle, Home, ArrowLeft, Search } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_404')({
   component: NotFound,

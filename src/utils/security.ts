@@ -80,7 +80,7 @@ export function isValidApiKey(key: string): boolean {
  * Rate limiter for API calls
  */
 export class RateLimiter {
-  private requests: number[] = []
+  private requests: Array<number> = []
   
   constructor(
     private maxRequests: number,

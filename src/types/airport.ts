@@ -26,7 +26,7 @@ export interface AirportSearchParams {
 }
 
 export interface AirportApiResponse {
-  airports: Airport[]
+  airports: Array<Airport>
   total?: number
   offset?: number
   limit?: number

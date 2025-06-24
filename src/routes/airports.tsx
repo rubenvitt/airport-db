@@ -1,20 +1,39 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute  } from '@tanstack/react-router'
 import { useState } from 'react'
+import { GitCompare, Globe, LayoutGrid, List, MapIcon, MapPin, Navigation, Plane, Search } from 'lucide-react'
+import type { Airport } from '@/types/airport'
 import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage, SearchBar, EmptyState } from '@/components/common'
+import { EmptyState, ErrorMessage, LoadingSpinner, SearchBar } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Globe, Navigation, Plane } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import { AirportExplorerProvider, useAirportExplorer } from '@/contexts/AirportExplorerContext'
+import { AirportComparison, AirportList, AirportMap, AirportSearchBar } from '@/components/airports'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 export const Route = createFileRoute('/airports')({
-  component: AirportsExplorer,
+  component: () => (
+    <AirportExplorerProvider>
+      <AirportsExplorer />
+    </AirportExplorerProvider>
+  ),
 })
 
 function AirportsExplorer() {
-  const [searchQuery, setSearchQuery] = useState('')
+  const [activeView, setActiveView] = useState<'map' | 'grid'>('map')
+  const {
+    searchQuery,
+    setSearchQuery,
+    addMarker,
+    isComparisonMode,
+    toggleComparisonMode,
+    comparisonAirports,
+    clearComparison,
+  } = useAirportExplorer()
   
-  // For free tier, we can only search by IATA code (3 letters) or ICAO code (4 letters)
+  // For API search - only search by IATA code (3 letters) or ICAO code (4 letters)
   const isValidIATA = searchQuery.length === 3 && /^[A-Z]{3}$/i.test(searchQuery)
   const isValidICAO = searchQuery.length === 4 && /^[A-Z]{4}$/i.test(searchQuery)
   
@@ -40,197 +59,148 @@ function AirportsExplorer() {
   const isLoading = isLoadingIATA || isLoadingICAO
   const error = errorIATA || errorICAO
   const airport = airportByIATA || airportByICAO
-  const airports = airport ? [airport] : []
+  const searchResults = airport ? [airport] : []
+  
+  const handleAirportSelect = (selectedAirport: Airport) => {
+    addMarker(selectedAirport)
+  }
 
   return (
-    <div className="container py-8 max-w-6xl mx-auto">
+    <div className="container py-8 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <MapPin className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Airport Explorer</h1>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Airport Explorer</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="comparison-mode"
+                checked={isComparisonMode}
+                onCheckedChange={toggleComparisonMode}
+              />
+              <Label htmlFor="comparison-mode" className="cursor-pointer">
+                Compare Mode
+              </Label>
+            </div>
+            {isComparisonMode && comparisonAirports.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearComparison}
+              >
+                Clear Comparison ({comparisonAirports.length})
+              </Button>
+            )}
+          </div>
         </div>
         <p className="text-muted-foreground">
-          Search for airports worldwide by their IATA or ICAO codes. 
-          Get detailed information including location, elevation, and timezone.
+          Explore airports worldwide with interactive maps, search, and comparison features.
         </p>
       </div>
 
       {/* Search Section */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Search Airports</CardTitle>
-          <CardDescription>
-            Enter an IATA (3-letter) or ICAO (4-letter) airport code
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SearchBar
-            onSearch={setSearchQuery}
-            placeholder="Try LAX, KLAX, JFK, KJFK, LHR, EGLL..."
-            isLoading={isLoading}
-            autoFocus
+      <div className="mb-6">
+        <AirportSearchBar
+          onAirportSelect={handleAirportSelect}
+          showFilters
+          className="max-w-2xl"
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Map/Grid View */}
+        <div className="lg:col-span-2">
+          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as 'map' | 'grid')}>
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="map" className="flex items-center gap-2">
+                <MapIcon className="h-4 w-4" />
+                Map View
+              </TabsTrigger>
+              <TabsTrigger value="grid" className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                Grid View
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="map" className="mt-0">
+              <AirportMap height="600px" />
+            </TabsContent>
+            
+            <TabsContent value="grid" className="mt-0">
+              {/* API Search Results */}
+              {isLoading && (
+                <Card>
+                  <CardContent className="py-12">
+                    <div className="flex justify-center">
+                      <LoadingSpinner text="Searching airports..." />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {error && (
+                <ErrorMessage
+                  title="Search Error"
+                  message="Unable to search airports. Please try again."
+                  error={error}
+                  showDetails
+                />
+              )}
+              
+              {searchResults.length > 0 && (
+                <AirportList
+                  airports={searchResults}
+                  title="Search Results"
+                  description="Airports matching your search"
+                  onAirportClick={handleAirportSelect}
+                />
+              )}
+              
+              {!isLoading && !error && searchResults.length === 0 && searchQuery && (
+                <Card>
+                  <CardContent className="py-12">
+                    <EmptyState
+                      title="No airports found"
+                      message={`No airport found with code "${searchQuery}". Try searching with a valid IATA or ICAO code.`}
+                      icon={MapPin}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+              
+              {!searchQuery && (
+                <Card>
+                  <CardContent className="py-12">
+                    <EmptyState
+                      title="Search for airports"
+                      message="Enter an IATA (3-letter) or ICAO (4-letter) airport code to get started"
+                      icon={Search}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        {/* Sidebar - Saved Airports */}
+        <div className="lg:col-span-1">
+          <AirportList
+            title="Saved Airports"
+            description="Your favorite airports for quick access"
+            showRemoveButton
           />
-          <div className="mt-4 text-sm text-muted-foreground">
-            <p className="font-medium mb-2">Popular airports to try:</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { name: 'Los Angeles', iata: 'LAX', icao: 'KLAX' },
-                { name: 'New York JFK', iata: 'JFK', icao: 'KJFK' },
-                { name: 'London Heathrow', iata: 'LHR', icao: 'EGLL' },
-                { name: 'Tokyo Haneda', iata: 'HND', icao: 'RJTT' },
-                { name: 'Dubai', iata: 'DXB', icao: 'OMDB' },
-                { name: 'Singapore', iata: 'SIN', icao: 'WSSS' },
-              ].map((airport) => (
-                <div key={airport.iata} className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSearchQuery(airport.iata)}
-                    className="h-7"
-                  >
-                    {airport.iata}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSearchQuery(airport.icao)}
-                    className="h-7"
-                  >
-                    {airport.icao}
-                  </Button>
-                  <span className="text-xs text-muted-foreground self-center ml-1">
-                    {airport.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Results Section */}
-      {error && (
-        <ErrorMessage
-          title="Search Error"
-          message="Unable to search airports. Please try again."
-          error={error}
-          showDetails
-        />
-      )}
-
-      {isLoading && (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner text="Searching airports..." />
         </div>
-      )}
-
-      {airports && airports.length > 0 && (
-        <div className="space-y-4">
-          {airports.map((airport) => (
-            <Card
-              key={`${airport.iata}-${airport.icao}`}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                      {airport.name}
-                      <Link
-                        to="/airports/$iataCode"
-                        params={{ iataCode: airport.iata }}
-                        className="text-primary hover:underline"
-                      >
-                        <Navigation className="h-5 w-5" />
-                      </Link>
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {airport.city}, {airport.region}, {airport.country}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Badge className="text-base">{airport.iata}</Badge>
-                    <Badge variant="secondary" className="text-base">{airport.icao}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Coordinates</p>
-                      <p className="font-medium">
-                        {airport.latitude.toFixed(6)}°, {airport.longitude.toFixed(6)}°
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Elevation</p>
-                      <p className="font-medium">{airport.elevation_ft.toLocaleString()} ft</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Timezone</p>
-                      <p className="font-medium">{airport.timezone}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Location Type</p>
-                      <p className="font-medium capitalize">International Airport</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Quick Actions</p>
-                      <div className="flex flex-col gap-2">
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${airport.latitude},${airport.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-primary hover:underline"
-                        >
-                          <Globe className="h-4 w-4" />
-                          View on Google Maps
-                        </a>
-                        <Link
-                          to="/flights"
-                          search={{ airport: airport.iata }}
-                          className="inline-flex items-center gap-2 text-primary hover:underline"
-                        >
-                          <Plane className="h-4 w-4" />
-                          View Live Flights
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {(isValidIATA || isValidICAO) && airports && airports.length === 0 && !isLoading && (
-        <EmptyState
-          title="No airport found"
-          message={`No airport found with code "${searchQuery}". Please check the code and try again.`}
-          icon={MapPin}
-        />
-      )}
-
-      {!searchQuery && (
-        <EmptyState
-          title="Search for an airport"
-          message="Enter an IATA or ICAO code above to get started"
-          icon={MapPin}
-        />
+      </div>
+      
+      {/* Comparison Panel */}
+      {isComparisonMode && comparisonAirports.length > 0 && (
+        <AirportComparison className="mt-6" />
       )}
     </div>
   )
 }
-
-// Add missing Button import
-import { Button } from '@/components/ui/button'

@@ -1,16 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate  } from '@tanstack/react-router'
+import { 
+  ArrowLeft, Clock, Compass, ExternalLink, Globe, Heart, 
+  Info, MapPin, Mountain, Navigation, Plane 
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useAirportByIATA } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage } from '@/components/common'
+import { ErrorMessage, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { 
-  MapPin, Globe, Navigation, Plane, Heart, ArrowLeft, 
-  Clock, Mountain, Compass, Info, ExternalLink 
-} from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
 
 export const Route = createFileRoute('/airports/$iataCode')({
   component: AirportDetails,

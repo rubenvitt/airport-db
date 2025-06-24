@@ -1,11 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { Link, createFileRoute  } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { Heart, MapPin, Plane, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/common'
-import { Heart, MapPin, Plane, Trash2 } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/favorites')({
   component: Favorites,
@@ -28,8 +27,8 @@ interface FavoriteFlight {
 }
 
 function Favorites() {
-  const [favoriteAirports, setFavoriteAirports] = useState<FavoriteAirport[]>([])
-  const [favoriteFlights, setFavoriteFlights] = useState<FavoriteFlight[]>([])
+  const [favoriteAirports, setFavoriteAirports] = useState<Array<FavoriteAirport>>([])
+  const [favoriteFlights, setFavoriteFlights] = useState<Array<FavoriteFlight>>([])
 
   // Load favorites from localStorage on mount
   useEffect(() => {

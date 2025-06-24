@@ -13,7 +13,7 @@ export interface FlightState {
   velocity: number | null // Velocity over ground in m/s
   true_track: number | null // True track in decimal degrees clockwise from north
   vertical_rate: number | null // Vertical rate in m/s. A positive value indicates that the airplane is climbing
-  sensors: number[] | null // IDs of the receivers which contributed to this state vector
+  sensors: Array<number> | null // IDs of the receivers which contributed to this state vector
   geo_altitude: number | null // Geometric altitude in meters
   squawk: string | null // The transponder code
   spi: boolean // Whether flight status indicates special purpose indicator
@@ -22,7 +22,7 @@ export interface FlightState {
 
 export interface FlightsResponse {
   time: number
-  states: FlightState[]
+  states: Array<FlightState>
 }
 
 export interface FlightTrack {
