@@ -31,4 +31,8 @@ node_modules/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
+
+# TanStack build and temporary files
+.tanstack/start/build/
+.tanstack/tmp/ 

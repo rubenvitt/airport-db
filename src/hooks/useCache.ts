@@ -1,7 +1,7 @@
 // React hook for cache management and monitoring
 
 import { useState, useEffect, useCallback } from 'react'
-import { getCache, type CacheStats, type CacheEvent } from '@/lib/cache'
+import { getCache, getCacheSync, type CacheStats, type CacheEvent } from '@/lib/cache'
 import { getCacheStats, invalidateCache, prefetch } from '@/api/cachedFetch'
 
 export interface UseCacheOptions {
@@ -13,7 +13,7 @@ export function useCache(options: UseCacheOptions = {}) {
   const { autoRefreshStats = true, refreshInterval = 5000 } = options
   const [stats, setStats] = useState<CacheStats | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const cache = getCache()
+  const cache = getCacheSync()
 
   // Fetch cache statistics
   const refreshStats = useCallback(async () => {
@@ -106,7 +106,7 @@ export function useCacheEntry<T>(key: string) {
   const [data, setData] = useState<T | null>(null)
   const [isStale, setIsStale] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
-  const cache = getCache()
+  const cache = getCacheSync()
 
   const checkEntry = useCallback(async () => {
     try {

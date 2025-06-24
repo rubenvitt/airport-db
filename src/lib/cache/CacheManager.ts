@@ -13,6 +13,7 @@ import type {
 } from './types'
 import { MemoryAdapter } from './storage/MemoryAdapter'
 import { IndexedDBAdapter } from './storage/IndexedDBAdapter'
+import { RedisAdapter } from './storage/RedisAdapter'
 import { EventEmitter } from '@/lib/eventBus'
 import { selectStrategy } from './strategies'
 import { extractEndpoint } from './utils/cacheKey'
@@ -30,13 +31,14 @@ const DEFAULT_CONFIG: CacheConfig = {
 
 export class CacheManager implements ICacheManager {
   private memoryAdapter: MemoryAdapter
+  private redisAdapter: RedisAdapter | null = null
   private persistAdapter: IndexedDBAdapter | null = null
   private config: CacheConfig
   private stats: CacheStats
   private eventBus: EventEmitter
   private pruneInterval: NodeJS.Timer | null = null
 
-  constructor(config: Partial<CacheConfig> = {}) {
+  constructor(config: Partial<CacheConfig> = {}, redisClient?: any) {
     this.config = { ...DEFAULT_CONFIG, ...config }
     this.memoryAdapter = new MemoryAdapter(this.config.maxEntries)
     this.eventBus = new EventEmitter()
@@ -51,6 +53,12 @@ export class CacheManager implements ICacheManager {
       lastReset: Date.now(),
     }
 
+    // Initialize Redis adapter if client provided
+    if (redisClient) {
+      this.redisAdapter = new RedisAdapter(redisClient, this.config.compressionThreshold)
+    }
+
+    // Initialize IndexedDB adapter for client-side persistence
     if (this.config.enablePersistence && typeof window !== 'undefined') {
       this.persistAdapter = new IndexedDBAdapter(this.config.compressionThreshold)
     }
@@ -64,13 +72,27 @@ export class CacheManager implements ICacheManager {
       // Try memory cache first
       let entry = await this.memoryAdapter.get<T>(key)
       
+      // Try Redis cache if not in memory
+      if (!entry && this.redisAdapter && this.redisAdapter.isAvailable()) {
+        entry = await this.redisAdapter.get<T>(key)
+        
+        if (entry) {
+          // Promote to memory cache
+          await this.memoryAdapter.set(key, entry)
+        }
+      }
+      
+      // Try persistent storage if not in Redis
       if (!entry && this.persistAdapter && options.persist !== false) {
-        // Try persistent storage
         entry = await this.persistAdapter.get<T>(key)
         
         if (entry) {
           // Promote to memory cache
           await this.memoryAdapter.set(key, entry)
+          // Also promote to Redis if available
+          if (this.redisAdapter && this.redisAdapter.isAvailable()) {
+            await this.redisAdapter.set(key, entry)
+          }
         }
       }
 
@@ -139,6 +161,11 @@ export class CacheManager implements ICacheManager {
       // Store in memory cache
       await this.memoryAdapter.set(key, entry)
 
+      // Store in Redis if available
+      if (this.redisAdapter && this.redisAdapter.isAvailable()) {
+        await this.redisAdapter.set(key, entry)
+      }
+
       // Store in persistent cache if enabled
       if (this.persistAdapter && options.persist !== false) {
         await this.persistAdapter.set(key, entry)
@@ -155,13 +182,18 @@ export class CacheManager implements ICacheManager {
   async delete(key: string): Promise<boolean> {
     try {
       const memoryDeleted = await this.memoryAdapter.delete(key)
+      let redisDeleted = false
       let persistDeleted = false
+      
+      if (this.redisAdapter && this.redisAdapter.isAvailable()) {
+        redisDeleted = await this.redisAdapter.delete(key)
+      }
       
       if (this.persistAdapter) {
         persistDeleted = await this.persistAdapter.delete(key)
       }
 
-      if (memoryDeleted || persistDeleted) {
+      if (memoryDeleted || redisDeleted || persistDeleted) {
         this.emit('delete', { key })
         return true
       }
@@ -178,13 +210,18 @@ export class CacheManager implements ICacheManager {
   async clear(pattern?: string): Promise<number> {
     try {
       const memoryCleared = await this.memoryAdapter.clear(pattern)
+      let redisCleared = 0
       let persistCleared = 0
+      
+      if (this.redisAdapter && this.redisAdapter.isAvailable()) {
+        redisCleared = await this.redisAdapter.clear(pattern)
+      }
       
       if (this.persistAdapter) {
         persistCleared = await this.persistAdapter.clear(pattern)
       }
 
-      const total = memoryCleared + persistCleared
+      const total = memoryCleared + redisCleared + persistCleared
       this.emit('clear', { pattern, count: total })
       return total
     } catch (error) {
@@ -199,6 +236,11 @@ export class CacheManager implements ICacheManager {
     const memoryKeys = await this.memoryAdapter.keys()
     if (memoryKeys.includes(key)) return true
 
+    if (this.redisAdapter && this.redisAdapter.isAvailable()) {
+      const redisKeys = await this.redisAdapter.keys()
+      if (redisKeys.includes(key)) return true
+    }
+
     if (this.persistAdapter) {
       const persistKeys = await this.persistAdapter.keys()
       return persistKeys.includes(key)
@@ -209,15 +251,19 @@ export class CacheManager implements ICacheManager {
 
   async getStats(): Promise<CacheStats> {
     const memorySize = await this.memoryAdapter.size()
+    const redisSize = this.redisAdapter && this.redisAdapter.isAvailable() 
+      ? await this.redisAdapter.size() : 0
     const persistSize = this.persistAdapter ? await this.persistAdapter.size() : 0
     
     const memoryKeys = await this.memoryAdapter.keys()
+    const redisKeys = this.redisAdapter && this.redisAdapter.isAvailable() 
+      ? await this.redisAdapter.keys() : []
     const persistKeys = this.persistAdapter ? await this.persistAdapter.keys() : []
     
     return {
       ...this.stats,
-      size: memorySize + persistSize,
-      entries: new Set([...memoryKeys, ...persistKeys]).size,
+      size: memorySize + redisSize + persistSize,
+      entries: new Set([...memoryKeys, ...redisKeys, ...persistKeys]).size,
       hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) || 0,
     }
   }
@@ -235,10 +281,20 @@ export class CacheManager implements ICacheManager {
   }
 
   async warmup(keys: string[]): Promise<void> {
-    if (!this.persistAdapter) return
-
     for (const key of keys) {
-      const entry = await this.persistAdapter.get(key)
+      let entry = null
+      
+      // Try Redis first
+      if (this.redisAdapter && this.redisAdapter.isAvailable()) {
+        entry = await this.redisAdapter.get(key)
+      }
+      
+      // Fall back to persistent storage
+      if (!entry && this.persistAdapter) {
+        entry = await this.persistAdapter.get(key)
+      }
+      
+      // Warm up memory cache
       if (entry && entry.metadata.expiresAt > Date.now()) {
         await this.memoryAdapter.set(key, entry)
       }

@@ -1,7 +1,7 @@
 // Cached fetch wrapper that integrates with the cache manager
 
 import { fetchApi, type FetchOptions } from './base'
-import { getCache, generateCacheKey, selectStrategy, type CacheOptions } from '@/lib/cache'
+import { getCache, getCacheSync, generateCacheKey, selectStrategy, type CacheOptions } from '@/lib/cache'
 import { extractEndpoint } from '@/lib/cache/utils/cacheKey'
 
 export interface CachedFetchOptions extends FetchOptions {
@@ -30,7 +30,7 @@ export async function cachedFetch<T>(
     return fetchApi<T>(url, fetchOptions)
   }
 
-  const cacheManager = getCache()
+  const cacheManager = await getCache()
   const endpoint = extractEndpoint(url)
   
   // Generate cache key
@@ -120,12 +120,12 @@ export async function prefetch(
 
 // Invalidate cache entries
 export async function invalidateCache(pattern?: string): Promise<number> {
-  const cache = getCache()
+  const cache = await getCache()
   return cache.clear(pattern)
 }
 
 // Get cache statistics
 export async function getCacheStats() {
-  const cache = getCache()
+  const cache = await getCache()
   return cache.getStats()
 }

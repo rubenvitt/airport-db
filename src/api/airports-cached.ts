@@ -1,38 +1,36 @@
-// Airport API client with server-side caching support
+// Airport API client with server-side API support (using Vite middleware)
 
 import { airportsApi as clientApi } from './airports'
 import type { Airport, AirportSearchParams } from '@/types/airport'
 
-// Check if server functions are available
-const isServerAvailable = typeof window === 'undefined' || 
-  (typeof window !== 'undefined' && import.meta.env.DEV)
-
-// Dynamic imports for server functions to avoid bundling server code in client
-let serverFunctions: any = null
-
-if (isServerAvailable) {
-  try {
-    serverFunctions = await import('../server/functions/airports')
-  } catch (error) {
-    console.log('Server functions not available, using client-side API')
-  }
-}
-
 export const airportsApi = {
   /**
-   * Search airports using server-side caching when available
+   * Search airports using server-side API when available
    * @param params Search parameters
    * @returns Array of airports matching the search criteria
    */
   async searchAirports(params: AirportSearchParams): Promise<Array<Airport>> {
-    // Try server function first if available
-    if (serverFunctions?.searchAirports) {
+    // Try server API first (Vite middleware)
+    if (typeof window !== 'undefined') {
       try {
-        const result = await serverFunctions.searchAirports(params)
-        console.log(`Airports fetched from ${result.source}`)
-        return result.airports
+        const url = new URL('/api/airports', window.location.origin)
+        
+        // Add search parameters
+        if (params.iata) url.searchParams.append('iata', params.iata)
+        if (params.icao) url.searchParams.append('icao', params.icao)
+        if (params.name) url.searchParams.append('name', params.name)
+        if (params.city) url.searchParams.append('city', params.city)
+        if (params.country) url.searchParams.append('country', params.country)
+
+        const response = await fetch(url.toString())
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log(`Airports fetched from ${data.source || 'server'}`)
+          return data.airports || []
+        }
       } catch (error) {
-        console.error('Server function failed, falling back to client API:', error)
+        console.error('Server API failed, falling back to client API:', error)
       }
     }
 
@@ -41,19 +39,23 @@ export const airportsApi = {
   },
 
   /**
-   * Get airport by IATA code with caching
+   * Get airport by IATA code with server-side caching
    * @param iataCode IATA code (e.g., "LAX")
    * @returns Airport details or null if not found
    */
   async getAirportByIATA(iataCode: string): Promise<Airport | null> {
-    // Try server function first if available
-    if (serverFunctions?.getAirportByIATA) {
+    // Try server API first
+    if (typeof window !== 'undefined') {
       try {
-        const result = await serverFunctions.getAirportByIATA(iataCode)
-        console.log(`Airport ${iataCode} fetched from ${result.source}`)
-        return result.airport
+        const response = await fetch(`/api/airports/${iataCode}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log(`Airport ${iataCode} fetched from ${data.source || 'server'}`)
+          return data.airport || null
+        }
       } catch (error) {
-        console.error('Server function failed, falling back to client API:', error)
+        console.error('Server API failed, falling back to client API:', error)
       }
     }
 
@@ -62,19 +64,23 @@ export const airportsApi = {
   },
 
   /**
-   * Get airport by ICAO code with caching
+   * Get airport by ICAO code with server-side caching
    * @param icaoCode ICAO code (e.g., "KLAX")
    * @returns Airport details or null if not found
    */
   async getAirportByICAO(icaoCode: string): Promise<Airport | null> {
-    // Try server function first if available
-    if (serverFunctions?.getAirportByICAO) {
+    // Try server API first
+    if (typeof window !== 'undefined') {
       try {
-        const result = await serverFunctions.getAirportByICAO(icaoCode)
-        console.log(`Airport ${icaoCode} fetched from ${result.source}`)
-        return result.airport
+        const response = await fetch(`/api/airports/${icaoCode}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log(`Airport ${icaoCode} fetched from ${data.source || 'server'}`)
+          return data.airport || null
+        }
       } catch (error) {
-        console.error('Server function failed, falling back to client API:', error)
+        console.error('Server API failed, falling back to client API:', error)
       }
     }
 
@@ -87,9 +93,12 @@ export const airportsApi = {
    * @returns Cache statistics or null if not available
    */
   async getCacheStats(): Promise<any | null> {
-    if (serverFunctions?.getCacheStats) {
+    if (typeof window !== 'undefined') {
       try {
-        return await serverFunctions.getCacheStats()
+        const response = await fetch('/api/cache-stats')
+        if (response.ok) {
+          return await response.json()
+        }
       } catch (error) {
         console.error('Failed to get cache stats:', error)
       }

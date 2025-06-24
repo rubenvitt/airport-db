@@ -10,8 +10,43 @@ export { compress, decompress, estimateSize } from './utils/compression'
 import { CacheManager } from './CacheManager'
 
 let cacheInstance: CacheManager | null = null
+let initPromise: Promise<CacheManager> | null = null
 
-export function getCache(): CacheManager {
+export async function getCache(): Promise<CacheManager> {
+  if (cacheInstance) return cacheInstance
+  
+  if (!initPromise) {
+    initPromise = initializeCache()
+  }
+  
+  return initPromise
+}
+
+async function initializeCache(): Promise<CacheManager> {
+  // Initialize Redis client if running on server
+  let redisClient = null
+  if (typeof window === 'undefined') {
+    try {
+      const { getRedisClient } = await import('@/server/services/redisClient')
+      redisClient = await getRedisClient()
+    } catch (error) {
+      console.warn('Failed to initialize Redis for cache manager:', error)
+    }
+  }
+  
+  cacheInstance = new CacheManager({
+    maxEntries: 2000,
+    maxSize: 100 * 1024 * 1024, // 100MB
+    enablePersistence: true,
+    enableCompression: true,
+    compressionThreshold: 5 * 1024, // 5KB
+  }, redisClient)
+  
+  return cacheInstance
+}
+
+// Synchronous getter for backward compatibility
+export function getCacheSync(): CacheManager {
   if (!cacheInstance) {
     cacheInstance = new CacheManager({
       maxEntries: 2000,
@@ -26,7 +61,7 @@ export function getCache(): CacheManager {
 
 // Helper to clear all caches
 export async function clearAllCaches(): Promise<void> {
-  const cache = getCache()
+  const cache = await getCache()
   await cache.clear()
   await cache.resetStats()
 }
