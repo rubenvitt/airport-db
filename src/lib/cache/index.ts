@@ -5,6 +5,7 @@ export { CacheManager } from './CacheManager'
 export { strategies, selectStrategy } from './strategies'
 export { generateCacheKey, parseCacheKey, matchPattern } from './utils/cacheKey'
 export { compress, decompress, estimateSize } from './utils/compression'
+export * from './observability'
 
 // Create and export singleton cache instance
 import { CacheManager } from './CacheManager'
