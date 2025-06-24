@@ -1,14 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
-import { useAllFlightStates, useAirportFlights } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage, SearchBar, EmptyState } from '@/components/common'
+import { Link, createFileRoute  } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { AlertCircle, Clock, MapPin, Navigation, Plane, TrendingUp } from 'lucide-react'
+import type { FlightState } from '@/types/flight'
+import { useAirportFlights, useAllFlightStates } from '@/hooks/api'
+import { EmptyState, ErrorMessage, LoadingSpinner, SearchBar } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plane, Navigation, Clock, MapPin, TrendingUp, AlertCircle } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import type { FlightState } from '@/types/flight'
 
 export const Route = createFileRoute('/flights')({
   component: LiveFlightTracker,

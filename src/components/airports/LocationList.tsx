@@ -1,27 +1,28 @@
-import { useState, useEffect } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { 
+  BarChart3, 
+  Check, 
+  ChevronRight, 
+  Clock,
+  Filter,
+  Globe,
+  Heart,
+  HeartOff,
+  MapPin,
+  Navigation,
+  Plane,
+  Search,
+  Star,
+  X
+} from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { LocationListSkeleton } from './LocationListSkeleton'
+import type { Airport } from '@/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
-import { 
-  MapPin, 
-  Navigation, 
-  Search, 
-  ChevronRight,
-  Plane,
-  Globe,
-  Heart,
-  HeartOff,
-  Filter,
-  X,
-  BarChart3,
-  Check,
-  Star,
-  Clock
-} from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import type { Airport } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   Select,
@@ -33,15 +34,15 @@ import {
 import { useComparison } from '@/contexts/ComparisonContext'
 import { 
   useFavorites, 
-  useSearchHistory, 
   useMapState, 
-  usePreferences 
+  usePreferences, 
+  useSearchHistory 
 } from '@/contexts/AppContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useEventBus, EVENTS, emitAirportSelected } from '@/lib/eventBus'
+import { EVENTS, emitAirportSelected, useEventBus } from '@/lib/eventBus'
 
 interface LocationListProps {
-  airports?: Airport[]
+  airports?: Array<Airport>
   selectedAirport?: Airport | null
   onAirportSelect?: (airport: Airport) => void
   onAirportRemove?: (airport: Airport) => void
@@ -50,16 +51,17 @@ interface LocationListProps {
   height?: string
   className?: string
   emptyMessage?: string
-  favoriteAirports?: string[]
+  favoriteAirports?: Array<string>
   onToggleFavorite?: (airport: Airport) => void
   useGlobalState?: boolean // New prop to enable global state integration
   showTabs?: boolean // Show tabs for switching between search results, favorites, and recent
+  isLoading?: boolean // Show loading skeleton
 }
 
 type SortOption = 'name' | 'city' | 'country' | 'iata' | 'elevation'
 type ViewMode = 'search' | 'favorites' | 'recent'
 
-export function LocationList({
+function LocationListComponent({
   airports: propAirports,
   selectedAirport: propSelectedAirport,
   onAirportSelect: propOnAirportSelect,
@@ -73,6 +75,7 @@ export function LocationList({
   onToggleFavorite: propOnToggleFavorite,
   useGlobalState = false,
   showTabs = false,
+  isLoading = false,
 }: LocationListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('name')
@@ -110,7 +113,7 @@ export function LocationList({
     : (propFavoriteAirports || [])
   
   // Determine which airports to show based on view mode
-  let displayAirports: Airport[] = []
+  let displayAirports: Array<Airport> = []
   if (useGlobalState && showTabs) {
     switch (viewMode) {
       case 'favorites':
@@ -128,17 +131,17 @@ export function LocationList({
   }
   
   // Handle airport selection
-  const handleAirportSelect = (airport: Airport) => {
+  const handleAirportSelect = useCallback((airport: Airport) => {
     if (useGlobalState) {
       setGlobalSelectedAirport(airport)
       addRecentAirport(airport)
     }
     propOnAirportSelect?.(airport)
     emitAirportSelected(airport) // Emit event for other components
-  }
+  }, [useGlobalState, setGlobalSelectedAirport, addRecentAirport, propOnAirportSelect])
   
   // Handle favorite toggle
-  const handleToggleFavorite = (airport: Airport) => {
+  const handleToggleFavorite = useCallback((airport: Airport) => {
     if (useGlobalState) {
       if (isFavoriteAirport(airport.iata)) {
         removeFavoriteAirport(airport.iata)
@@ -153,7 +156,7 @@ export function LocationList({
       }
     }
     propOnToggleFavorite?.(airport)
-  }
+  }, [useGlobalState, isFavoriteAirport, removeFavoriteAirport, addFavoriteAirport, propOnToggleFavorite])
   
   // Persist sort and filter preferences in localStorage
   const STORAGE_KEY = 'locationListPreferences'
@@ -172,37 +175,43 @@ export function LocationList({
   }, [sortBy, filterCountry])
 
   // Get unique countries for filter
-  const countries = Array.from(new Set(displayAirports.map(a => a.country))).sort()
+  const countries = useMemo(() => 
+    Array.from(new Set(displayAirports.map(a => a.country))).sort()
+  , [displayAirports])
 
   // Filter and sort airports
-  const filteredAirports = displayAirports
-    .filter(airport => {
-      const matchesSearch = searchQuery.toLowerCase() === '' || 
-        airport.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        airport.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        airport.iata.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        airport.icao.toLowerCase().includes(searchQuery.toLowerCase())
-      
-      const matchesCountry = filterCountry === 'all' || airport.country === filterCountry
-      
-      return matchesSearch && matchesCountry
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name)
-        case 'city':
-          return a.city.localeCompare(b.city)
-        case 'country':
-          return a.country.localeCompare(b.country)
-        case 'iata':
-          return a.iata.localeCompare(b.iata)
-        case 'elevation':
-          return b.elevation_ft - a.elevation_ft
-        default:
-          return 0
-      }
-    })
+  const filteredAirports = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase()
+    
+    return displayAirports
+      .filter(airport => {
+        const matchesSearch = searchLower === '' || 
+          airport.name.toLowerCase().includes(searchLower) ||
+          airport.city.toLowerCase().includes(searchLower) ||
+          airport.iata.toLowerCase().includes(searchLower) ||
+          airport.icao.toLowerCase().includes(searchLower)
+        
+        const matchesCountry = filterCountry === 'all' || airport.country === filterCountry
+        
+        return matchesSearch && matchesCountry
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name)
+          case 'city':
+            return a.city.localeCompare(b.city)
+          case 'country':
+            return a.country.localeCompare(b.country)
+          case 'iata':
+            return a.iata.localeCompare(b.iata)
+          case 'elevation':
+            return b.elevation_ft - a.elevation_ft
+          default:
+            return 0
+        }
+      })
+  }, [displayAirports, searchQuery, filterCountry, sortBy])
 
   const isFavorite = (airport: Airport) => {
     if (useGlobalState) {
@@ -302,9 +311,9 @@ export function LocationList({
                 <div
                   key={`${airport.iata}-${airport.icao}`}
                   className={cn(
-                    "p-3 rounded-lg border transition-all cursor-pointer",
-                    "hover:bg-accent hover:border-accent-foreground/20",
-                    isSelected && "bg-primary/10 border-primary",
+                    "p-3 rounded-lg border transition-all duration-200 cursor-pointer animate-in",
+                    "hover:bg-accent hover:border-accent-foreground/20 hover:shadow-sm",
+                    isSelected && "bg-primary/10 border-primary shadow-sm",
                     inComparison && "ring-2 ring-primary ring-opacity-50"
                   )}
                   onClick={() => handleAirportSelect(airport)}
@@ -440,6 +449,10 @@ export function LocationList({
     </>
   )
 
+  if (isLoading) {
+    return <LocationListSkeleton height={height} showTabs={showTabs} />
+  }
+
   return (
     <Card className={cn("flex flex-col", className)}>
       <CardHeader className="pb-3">
@@ -478,3 +491,5 @@ export function LocationList({
     </Card>
   )
 }
+
+export const LocationList = memo(LocationListComponent)

@@ -1,9 +1,9 @@
 // Airport API client
 
-import type { Airport, AirportSearchParams } from '@/types/airport'
 import { fetchApi } from './base'
-import { RateLimiter } from '@/utils/security'
 import { API_CONFIG, hasApiKey } from './config'
+import type { Airport, AirportSearchParams } from '@/types/airport'
+import { RateLimiter } from '@/utils/security'
 
 // Client-side rate limiter for API Ninjas
 // Free tier: 10,000 requests/month = ~333/day = ~14/hour
@@ -17,7 +17,7 @@ export const airportsApi = {
    * @param params Search parameters
    * @returns Array of airports matching the search criteria
    */
-  async searchAirports(params: AirportSearchParams): Promise<Airport[]> {
+  async searchAirports(params: AirportSearchParams): Promise<Array<Airport>> {
     if (!hasApiKey.apiNinjas()) {
       throw new Error('API Ninjas API key is not configured')
     }
@@ -44,7 +44,7 @@ export const airportsApi = {
       console.warn('Free tier only supports IATA and ICAO code searches')
     }
     
-    const airports = await fetchApi<Airport[]>(
+    const airports = await fetchApi<Array<Airport>>(
       `${API_CONFIG.apiNinjas.baseUrl}${API_CONFIG.apiNinjas.endpoints.airports}`,
       {
         headers: {
@@ -83,7 +83,7 @@ export const airportsApi = {
    * @param name Airport name (partial match supported)
    * @returns Array of airports
    */
-  async searchByName(name: string): Promise<Airport[]> {
+  async searchByName(name: string): Promise<Array<Airport>> {
     console.warn('searchByName requires API Ninjas premium tier')
     return []
   },
@@ -98,7 +98,7 @@ export const airportsApi = {
   async getAirportsByCity(
     city: string,
     country?: string,
-  ): Promise<Airport[]> {
+  ): Promise<Array<Airport>> {
     console.warn('getAirportsByCity requires API Ninjas premium tier')
     return []
   },
@@ -111,7 +111,7 @@ export const airportsApi = {
    */
   async getAirportsByCountry(
     country: string
-  ): Promise<Airport[]> {
+  ): Promise<Array<Airport>> {
     console.warn('getAirportsByCountry requires API Ninjas premium tier')
     return []
   },

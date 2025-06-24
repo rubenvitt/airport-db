@@ -1,5 +1,7 @@
 export { MapView } from './MapView'
+export { LazyMapView } from './LazyMapView'
 export { AirportSearchBar } from './AirportSearchBar'
 export { LocationList } from './LocationList'
 export { ComparisonPanel } from './ComparisonPanel'
 export { ComparisonButton } from './ComparisonButton'
+export { LazyComparisonChart } from './LazyComparisonChart'

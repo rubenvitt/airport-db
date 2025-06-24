@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { Plane, MapPin, Moon, Sun, Menu, X, Heart, Settings, Home, Monitor, Clock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Clock, Heart, Home, MapPin, Menu, Monitor, Moon, Plane, Settings, Sun, X } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/use-theme'
 import {
   DropdownMenu,

@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { LocationList } from '@/components/airports'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, Clock, Heart } from 'lucide-react'
-import { useFavorites, useSearchHistory } from '@/contexts/AppContext'
-import { useAirportByIATA } from '@/hooks/api'
+import { Clock, Heart, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Airport } from '@/types'
+import { LocationList } from '@/components/airports'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useFavorites, useSearchHistory } from '@/contexts/AppContext'
+import { useAirportByIATA } from '@/hooks/api'
 import { LoadingSpinner } from '@/components/common'
 
 export const Route = createFileRoute('/favorites')({
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/favorites')({
 function FavoritesPage() {
   const { favoriteAirports } = useFavorites()
   const { recentAirports } = useSearchHistory()
-  const [favoriteAirportData, setFavoriteAirportData] = useState<Airport[]>([])
+  const [favoriteAirportData, setFavoriteAirportData] = useState<Array<Airport>>([])
   const [isLoading, setIsLoading] = useState(true)
   
   // Fetch full airport data for favorites
@@ -35,7 +35,7 @@ function FavoritesPage() {
       })
       
       const results = await Promise.all(airportPromises)
-      const validAirports = results.filter(Boolean) as Airport[]
+      const validAirports = results.filter(Boolean) as Array<Airport>
       
       // Merge with recent airports to have full data
       const allAirports = [...validAirports, ...recentAirports]

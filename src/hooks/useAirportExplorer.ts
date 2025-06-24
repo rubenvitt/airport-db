@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
-import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
-import { useFavorites, useSearchHistory, useMapState, useApp } from '@/contexts/AppContext'
-import { useComparison } from '@/contexts/ComparisonContext'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Airport } from '@/types'
+import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
+import { useApp, useFavorites, useMapState, useSearchHistory } from '@/contexts/AppContext'
+import { useComparison } from '@/contexts/ComparisonContext'
 
 interface UseAirportExplorerOptions {
   initialCode?: string

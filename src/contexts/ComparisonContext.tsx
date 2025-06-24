@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { Airport } from '@/types/airport'
 
 interface ComparisonContextType {
-  comparedAirports: Airport[]
+  comparedAirports: Array<Airport>
   addToComparison: (airport: Airport) => void
   removeFromComparison: (icao: string) => void
   clearComparison: () => void
@@ -15,7 +15,7 @@ const MAX_COMPARISON_AIRPORTS = 3
 const ComparisonContext = createContext<ComparisonContextType | undefined>(undefined)
 
 export function ComparisonProvider({ children }: { children: React.ReactNode }) {
-  const [comparedAirports, setComparedAirports] = useState<Airport[]>(() => {
+  const [comparedAirports, setComparedAirports] = useState<Array<Airport>>(() => {
     // Check if we're in the browser
     if (typeof window === 'undefined') {
       return []

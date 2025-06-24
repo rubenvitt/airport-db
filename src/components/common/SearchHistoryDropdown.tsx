@@ -1,3 +1,5 @@
+import { Clock, MapPin, Plane, X } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { useSearchHistory } from '@/contexts/AppContext'
 import {
   DropdownMenu,
@@ -8,8 +10,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { Clock, X, MapPin, Plane } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
 
 interface SearchHistoryDropdownProps {
   children?: React.ReactNode

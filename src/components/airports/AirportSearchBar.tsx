@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import { Search, X, Loader2, Plane, MapPin, History } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { History, Loader2, MapPin, Plane, Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { commonAirports } from '@/data/common-airports'
 import { useSearchHistory } from '@/contexts/AppContext'
-import { eventBus, EVENTS, emitSearchStarted } from '@/lib/eventBus'
+import { EVENTS, emitSearchStarted, eventBus } from '@/lib/eventBus'
 
 interface AirportSearchBarProps {
   onSearch: (query: string) => void
@@ -69,7 +69,7 @@ export function AirportSearchBar({
             city: 'Recent search',
             country: ''
           }
-        }).filter(Boolean).slice(0, 5) as AirportSuggestion[]
+        }).filter(Boolean).slice(0, 5) as Array<AirportSuggestion>
       }
       return []
     }

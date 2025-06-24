@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { Airport } from '@/types'
 
 // Types for our global state
@@ -39,12 +39,12 @@ interface MapState {
 
 interface AppState {
   // Favorites
-  favoriteAirports: FavoriteAirport[]
-  favoriteFlights: FavoriteFlight[]
+  favoriteAirports: Array<FavoriteAirport>
+  favoriteFlights: Array<FavoriteFlight>
   
   // Search
-  searchHistory: SearchHistoryItem[]
-  recentAirports: Airport[]
+  searchHistory: Array<SearchHistoryItem>
+  recentAirports: Array<Airport>
   
   // Map State
   mapState: MapState

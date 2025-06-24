@@ -1,4 +1,4 @@
-import { Github, ExternalLink, Heart } from 'lucide-react'
+import { ExternalLink, Github, Heart } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 
 export default function Footer() {

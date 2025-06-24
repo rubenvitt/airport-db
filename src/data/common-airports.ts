@@ -9,7 +9,7 @@ export interface CommonAirport {
   country: string
 }
 
-export const commonAirports: CommonAirport[] = [
+export const commonAirports: Array<CommonAirport> = [
   // United States
   { iata: 'ATL', icao: 'KATL', name: 'Hartsfield-Jackson Atlanta International', city: 'Atlanta', country: 'USA' },
   { iata: 'LAX', icao: 'KLAX', name: 'Los Angeles International', city: 'Los Angeles', country: 'USA' },

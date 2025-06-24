@@ -1,10 +1,13 @@
-type EventCallback = (...args: any[]) => void
+// Hook for using event bus in React components
+import { useEffect } from 'react'
+
+type EventCallback = (...args: Array<any>) => void
 
 interface EventBus {
-  on(event: string, callback: EventCallback): () => void
-  off(event: string, callback: EventCallback): void
-  emit(event: string, ...args: any[]): void
-  once(event: string, callback: EventCallback): () => void
+  on: (event: string, callback: EventCallback) => () => void
+  off: (event: string, callback: EventCallback) => void
+  emit: (event: string, ...args: Array<any>) => void
+  once: (event: string, callback: EventCallback) => () => void
 }
 
 class EventBusImpl implements EventBus {
@@ -30,7 +33,7 @@ class EventBusImpl implements EventBus {
     }
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: Array<any>): void {
     const callbacks = this.events.get(event)
     if (callbacks) {
       callbacks.forEach(callback => {
@@ -44,7 +47,7 @@ class EventBusImpl implements EventBus {
   }
 
   once(event: string, callback: EventCallback): () => void {
-    const wrappedCallback = (...args: any[]) => {
+    const wrappedCallback = (...args: Array<any>) => {
       callback(...args)
       this.off(event, wrappedCallback)
     }
@@ -97,7 +100,7 @@ export function emitSearchStarted(query: string) {
   eventBus.emit(EVENTS.SEARCH_STARTED, query)
 }
 
-export function emitSearchCompleted(results: any[]) {
+export function emitSearchCompleted(results: Array<any>) {
   eventBus.emit(EVENTS.SEARCH_COMPLETED, results)
 }
 
@@ -108,9 +111,6 @@ export function emitSearchFailed(error: any) {
 export function emitMapMoved(center: [number, number], zoom: number) {
   eventBus.emit(EVENTS.MAP_MOVED, center, zoom)
 }
-
-// Hook for using event bus in React components
-import { useEffect } from 'react'
 
 export function useEventBus(event: string, handler: EventCallback) {
   useEffect(() => {

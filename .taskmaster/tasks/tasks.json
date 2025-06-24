@@ -689,8 +689,8 @@
               10,
               11
             ],
-            "details": "Implement lazy loading for components and data. Add loading indicators and smooth transitions. Optimize render cycles and minimize unnecessary re-renders.",
-            "status": "pending",
+            "details": "Implement lazy loading for components and data. Add loading indicators and smooth transitions. Optimize render cycles and minimize unnecessary re-renders.\n<info added on 2025-06-24T11:35:58.119Z>\nCompleted performance and UX enhancements:  \n• Lazy-loaded MapView and ComparisonChart behind Suspense boundaries with loading spinners, trimming initial bundle load.  \n• Added LocationListSkeleton and unified loading-state handling across the app for improved perceived performance.  \n• Optimized rendering: wrapped LocationList in React.memo, introduced useCallback for event handlers, and useMemo for costly calculations (countries list, filtered airports).  \n• Implemented CSS fade-ins for list items, smooth hover effects, and refined button animations.  \n• Reduced bundle size by cleaning unused imports, refining ESLint rules, and reordering imports; main bundle ~443 KB (141 KB gzip) with ComparisonChart now loaded on demand.\n</info added on 2025-06-24T11:35:58.119Z>",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -1875,7 +1875,7 @@
         "description": "Add a server-side cache that stores resolved airport metadata for 30 days to eliminate redundant external API calls.",
         "details": "1. Cache Choice & Setup\n   • Use Redis (preferred for TTL support and speed). `docker run -p 6379:6379 redis:7-alpine`\n   • Add `ioredis` ^5.x to the backend: `npm i ioredis`.\n   • Expose host/port/credentials via environment variables (`REDIS_URL`).\n\n2. Data Model\n   • Key pattern: `airport:<iata|icao>` (e.g. `airport:LHR`).\n   • Value: JSON-stringified object returned by the airport-lookup service plus metadata `{ data: {...}, source:\"external\", fetchedAt: 1680705582 }`.\n   • TTL: 2 592 000 s (30 days). Make TTL configurable via `AIRPORT_CACHE_TTL`.\n\n3. Caching Layer\n   • Create `services/airportCache.ts` exporting:\n     ```ts\n     export async function getAirport(code:string){ ... }\n     export async function setAirport(code:string, data:Airport, ttl:number){ ... }\n     ```\n   • Wrap existing airport-lookup logic:\n     ```ts\n     export async function resolveAirport(code:string){\n         const cached = await getAirport(code);\n         if(cached) return {...cached, source:\"cache\"};\n\n         const fresh = await externalApiResolve(code);\n         await setAirport(code, fresh, TTL);\n         return {...fresh, source:\"api\"};\n     }\n     ```\n   • Ensure concurrent requests for the same miss don’t trigger multiple API calls; use Redis `SETNX` or a mutex library (e.g. `redlock`).\n\n4. Purging Strategy\n   • Rely on Redis key expiration for automatic eviction.\n   • Add a cron job (node-cron) `0 3 * * *` to call `redis.scan` and delete keys older than TTL if code changes TTL dynamically.\n\n5. Observability & Fallbacks\n   • Log cache hits/misses into winston logger (Task 14 integration).\n   • Emit Prometheus metrics or Sentry breadcrumbs as needed: `airport_cache_hits`, `airport_cache_misses`, `airport_cache_errors`.\n   • On Redis failure, bypass cache and call API to keep feature functional.\n\n6. Configuration & Docs\n   • Update `README.md` and `docker-compose.yml` with Redis service.\n   • Add migration note for staging/production environments.\n\n7. Security & Compliance\n   • No PII stored; still encrypt Redis at-rest in production if policy requires.\n   • Restrict Redis network access to backend container/subnet.\n",
         "testStrategy": "1. Unit Tests (Jest)\n   • `resolveAirport()` returns cached data on second call.\n   • Data expires after TTL by mocking timers.\n   • Concurrent “double-miss” leads to one external API call (use jest mocks & spy count).\n\n2. Integration Tests\n   • Spin up ephemeral Redis with `@testcontainers/redis`.\n   • Stub external API; verify it is hit on first request and skipped subsequently.\n   • Simulate Redis outage; verify API still responds and logs warning.\n\n3. Performance Benchmarks\n   • Measure avg. latency reduction with caching enabled vs. disabled for 1k requests.\n   • Use autocannon to ensure no throughput regression.\n\n4. Security & Config Validation\n   • Attempt to read keys from unauthorized client; ensure firewall/network rules block.\n   • Verify environment variable override of TTL.\n\n5. Observability Tests\n   • Trigger hits/misses and confirm winston logs & metrics counters increment.\n",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "medium",
         "subtasks": [
@@ -1885,7 +1885,7 @@
             "description": "Set up Redis instances for development and staging with persistence, replication, and secure connection parameters.",
             "dependencies": [],
             "details": "Select deployment method (Docker/Kubernetes/cloud service), configure maxmemory policy, AOF/RDB persistence, TLS, authentication, and provide connection strings.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1896,7 +1896,7 @@
               1
             ],
             "details": "Produce OpenAPI/Swagger spec covering key naming conventions, request/response formats, versioning, and expected status codes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1908,7 +1908,7 @@
               2
             ],
             "details": "Set up connection pooling, implement CRUD with TTL, handle serialization/deserialization, and integrate configuration management.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1918,8 +1918,8 @@
             "dependencies": [
               3
             ],
-            "details": "Implement SETNX/Redlock patterns, ensure idempotency, and document retry strategies.",
-            "status": "pending",
+            "details": "Implement SETNX/Redlock patterns, ensure idempotency, and document retry strategies.\n<info added on 2025-06-24T11:51:24.498Z>\n• Implemented ConcurrencyManager with Redis-based distributed locking via SETNX/Redlock  \n• Added in-process mutex fallback for scenarios where Redis is unavailable  \n• Created deduplicateOperation helper to enforce idempotency per airport code  \n• Integrated locking/deduplication into getAirportByIATA and getAirportByICAO server flows  \n• Updated docker-compose to run Redis on port 9021 and confirmed lock acquisition in integration tests\n</info added on 2025-06-24T11:51:24.498Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -2060,7 +2060,7 @@
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-24T11:21:48.706Z",
+      "updated": "2025-06-24T11:51:06.970Z",
       "description": "Tasks for master context"
     }
   }

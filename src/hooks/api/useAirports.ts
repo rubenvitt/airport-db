@@ -1,6 +1,6 @@
-import { useQuery, useSuspenseQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { airportsApi } from '@/api/airports'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type { Airport, AirportSearchParams } from '@/types/airport'
+import { airportsApi } from '@/api/airports'
 
 // Query keys factory
 export const airportKeys = {

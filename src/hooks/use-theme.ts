@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export type Theme = 'light' | 'dark' | 'system'
 
@@ -19,7 +19,7 @@ export function useTheme() {
       if (theme === 'system') {
         resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
       } else {
-        resolved = theme as 'light' | 'dark'
+        resolved = theme
       }
 
       setResolvedTheme(resolved)

@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { X, BarChart3, Table } from 'lucide-react'
+import { BarChart3, Table, X } from 'lucide-react'
+import { LazyComparisonChart } from './LazyComparisonChart'
+import type { Airport } from '@/types/airport'
 import {
   Sheet,
   SheetContent,
@@ -12,8 +14,6 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useComparison } from '@/contexts/ComparisonContext'
-import type { Airport } from '@/types/airport'
-import { ComparisonChart } from './ComparisonChart'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface ComparisonPanelProps {
@@ -116,7 +116,7 @@ export function ComparisonPanel({ open, onOpenChange }: ComparisonPanelProps) {
                   </div>
                 </div>
               ) : (
-                <ComparisonChart airports={comparedAirports} />
+                <LazyComparisonChart airports={comparedAirports} />
               )}
             </ScrollArea>
           </>

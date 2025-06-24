@@ -1,11 +1,11 @@
-import { createFileRoute, Outlet, useMatchRoute } from '@tanstack/react-router'
+import { Outlet, createFileRoute, useMatchRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { LoadingSpinner, ErrorMessage } from '@/components/common'
+import { MapPin } from 'lucide-react'
+import { ErrorMessage, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MapPin } from 'lucide-react'
-import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
+import { AirportSearchBar, LazyMapView, LocationList } from '@/components/airports'
 import { ComparisonButton } from '@/components/airports/ComparisonButton'
 import { ComparisonPanel } from '@/components/airports/ComparisonPanel'
 import { useAirportExplorer } from '@/hooks/useAirportExplorer'
@@ -22,7 +22,7 @@ export const Route = createFileRoute('/airports')({
 
 function AirportsExplorer() {
   const matchRoute = useMatchRoute()
-  const searchParams = Route.useSearch() as { code?: string }
+  const searchParams = Route.useSearch()
   const initialCode = searchParams.code || ''
   const [isComparisonOpen, setIsComparisonOpen] = useState(false)
   
@@ -137,7 +137,7 @@ function AirportsExplorer() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <MapView
+              <LazyMapView
                 airports={searchResults}
                 selectedAirport={selectedAirport}
                 onAirportSelect={setSelectedAirport}
@@ -160,6 +160,7 @@ function AirportsExplorer() {
             onToggleFavorite={toggleFavorite}
             useGlobalState={true}
             showTabs={false} // Don't show tabs on main airport explorer page
+            isLoading={isLoading}
           />
         </div>
       </div>
@@ -174,11 +175,6 @@ function AirportsExplorer() {
         />
       )}
 
-      {isLoading && (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner text="Searching airports..." />
-        </div>
-      )}
       
       {/* Comparison Button */}
       <ComparisonButton onClick={() => setIsComparisonOpen(true)} />

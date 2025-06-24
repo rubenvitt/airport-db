@@ -2,5 +2,5 @@
 
 export * from './base'
 export * from './config'
-export * from './airports'
+export { airportsApi } from './airports-cached'
 export * from './flights'

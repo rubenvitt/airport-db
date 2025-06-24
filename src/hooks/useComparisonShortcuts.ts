@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { useComparison } from '@/contexts/ComparisonContext'
-import { useEventBus, EVENTS } from '@/lib/eventBus'
 import type { Airport } from '@/types/airport'
+import { useComparison } from '@/contexts/ComparisonContext'
+import { EVENTS, useEventBus } from '@/lib/eventBus'
 
 export function useComparisonShortcuts(
   selectedAirport: Airport | null,

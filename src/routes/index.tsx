@@ -1,11 +1,11 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { Globe, Map, MapPin, Plane } from 'lucide-react'
+import { useState } from 'react'
 import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage } from '@/components/common'
+import { ErrorMessage, LoadingSpinner } from '@/components/common'
 import { AirportSearchBar } from '@/components/airports'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plane, MapPin, Globe, Map } from 'lucide-react'
-import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
   component: HomePage,

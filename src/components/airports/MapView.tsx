@@ -1,16 +1,16 @@
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { MapPin, Move, Navigation2, ZoomIn, ZoomOut } from 'lucide-react'
+import type { Airport } from '@/types'
 import { Card } from '@/components/ui/card'
-import { MapPin, Navigation2, ZoomIn, ZoomOut, Move } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/common'
 import { useMapState, usePreferences } from '@/contexts/AppContext'
-import type { Airport } from '@/types'
 import 'leaflet/dist/leaflet.css'
-import { useEventBus, EVENTS, emitMapMoved, emitAirportSelected } from '@/lib/eventBus'
+import { EVENTS, emitAirportSelected, emitMapMoved, useEventBus } from '@/lib/eventBus'
 
 interface MapViewProps {
-  airports?: Airport[]
+  airports?: Array<Airport>
   selectedAirport?: Airport | null
   onAirportSelect?: (airport: Airport) => void
   center?: [number, number]

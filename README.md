@@ -27,6 +27,7 @@ A modern, responsive web application for exploring airport data and tracking liv
 
 - Node.js 18+ and pnpm
 - API keys for data sources (see Environment Setup below)
+- Docker and Docker Compose (for Redis caching)
 
 ### Installation
 
@@ -40,6 +41,9 @@ pnpm install
 
 # Copy environment variables
 cp .env.example .env
+
+# Start Redis for caching (optional but recommended)
+docker-compose up -d redis
 
 # Start development server
 pnpm dev
@@ -67,6 +71,16 @@ You'll need to configure API keys in your `.env` file:
 3. **Other Optional APIs**:
    - AviationStack: `VITE_AVIATIONSTACK_KEY`
    - Mapbox (for enhanced maps): `VITE_MAPBOX_TOKEN`
+
+4. **Redis Configuration** (Optional but recommended):
+   - Default: `REDIS_URL=redis://localhost:9021`
+   - Or use individual parameters:
+     ```
+     REDIS_HOST=localhost
+     REDIS_PORT=9021
+     REDIS_PASSWORD=your_redis_password
+     ```
+   - Cache TTL: `AIRPORT_CACHE_TTL=2592000` (30 days)
 
 ## Available Scripts
 

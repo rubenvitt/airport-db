@@ -1,11 +1,11 @@
 import React from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import type { Airport } from '@/types/airport'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { Airport } from '@/types/airport'
 
 interface ComparisonChartProps {
-  airports: Airport[]
+  airports: Array<Airport>
 }
 
 export function ComparisonChart({ airports }: ComparisonChartProps) {
@@ -46,7 +46,7 @@ export function ComparisonChart({ airports }: ComparisonChartProps) {
       acc.push({ country, count: 1, airports: [airport.iata] })
     }
     return acc
-  }, [] as { country: string; count: number; airports: string[] }[])
+  }, [] as Array<{ country: string; count: number; airports: Array<string> }>)
 
   return (
     <div className="space-y-4 mt-6">

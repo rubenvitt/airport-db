@@ -1,6 +1,6 @@
 {
   "../../../../../~start/default-client-entry.tsx": {
-    "file": "assets/main-Bt9JGKqn.js",
+    "file": "assets/main-C72e0wOY.js",
     "name": "main",
     "src": "../../../../../~start/default-client-entry.tsx",
     "isEntry": true,
@@ -12,472 +12,316 @@
       "src/routes/_404.tsx?tsr-split=component",
       "src/routes/index.tsx?tsr-split=component",
       "src/routes/flights.$flightId.tsx?tsr-split=component",
-      "src/routes/demo.tanstack-query.tsx?tsr-split=component",
-      "src/routes/demo.store.tsx?tsr-split=component",
-      "src/routes/demo.search-history.tsx?tsr-split=component",
-      "src/routes/demo.map-interactions.tsx?tsr-split=component",
-      "src/routes/demo.locationlist.tsx?tsr-split=component",
-      "src/routes/airports.$iataCode.tsx?tsr-split=component",
-      "src/routes/demo.start.server-funcs.tsx?tsr-split=component",
-      "src/routes/demo.start.api-request.tsx?tsr-split=component",
-      "src/routes/demo.form.simple.tsx?tsr-split=component",
-      "src/routes/demo.form.address.tsx?tsr-split=component"
+      "src/routes/airports.$iataCode.tsx?tsr-split=component"
     ],
     "css": [
-      "assets/styles-DlG0Qafc.css"
+      "assets/styles-BJuize5l.css"
     ],
     "assets": [
-      "assets/styles-DlG0Qafc.css"
+      "assets/styles-BJuize5l.css"
     ]
   },
   "/Users/rubeen/dev/personal/airport-db/src/styles.css": {
-    "file": "assets/styles-DlG0Qafc.css",
+    "file": "assets/styles-BJuize5l.css",
     "src": "/Users/rubeen/dev/personal/airport-db/src/styles.css"
   },
-  "_AirportSearchBar-D-M_hrxm.js": {
-    "file": "assets/AirportSearchBar-D-M_hrxm.js",
+  "_AirportSearchBar-E_w-omnX.js": {
+    "file": "assets/AirportSearchBar-E_w-omnX.js",
     "name": "AirportSearchBar",
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_input-CI4WR4HK.js",
-      "_search-hEFOytY_.js",
-      "_alert-B_6A4nCc.js"
+      "_input-Dcuoicru.js",
+      "_LazyComparisonChart-B50SKzJz.js",
+      "_search-NRKEvCcW.js",
+      "_badge-D_v6iEMF.js"
     ]
   },
-  "_EmptyState-wYioyc1e.js": {
-    "file": "assets/EmptyState-wYioyc1e.js",
-    "name": "EmptyState",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "_LocationList-BVZ1sNik.js": {
-    "file": "assets/LocationList-BVZ1sNik.js",
-    "name": "LocationList",
+  "_LazyComparisonChart-B50SKzJz.js": {
+    "file": "assets/LazyComparisonChart-B50SKzJz.js",
+    "name": "LazyComparisonChart",
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_badge-DpZ8TZHu.js",
-      "_select-CaEkAdgq.js",
-      "_input-CI4WR4HK.js",
-      "_search-hEFOytY_.js",
-      "_navigation-DnyJmP0f.js",
-      "_globe-J2Z3WNma.js"
-    ]
-  },
-  "_MapView-BDQrTzqD.js": {
-    "file": "assets/MapView-BDQrTzqD.js",
-    "name": "MapView",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_badge-DpZ8TZHu.js",
-      "_alert-B_6A4nCc.js"
+      "_badge-D_v6iEMF.js",
+      "_select-DoP4Ndxy.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js",
+      "_globe-sbuWZGaV.js"
     ],
     "dynamicImports": [
-      "_leaflet-src-D8Cs4W_V.js",
-      "node_modules/.pnpm/react-leaflet@5.0.0_leaflet@1.9.4_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-leaflet/lib/index.js"
+      "src/components/airports/MapView.tsx",
+      "src/components/airports/ComparisonChart.tsx"
     ],
     "css": [
-      "assets/leaflet-CIGW-MKW.css"
+      "assets/LazyComparisonChart-CIGW-MKW.css"
     ]
   },
-  "_alert-B_6A4nCc.js": {
-    "file": "assets/alert-B_6A4nCc.js",
-    "name": "alert",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
+  "_LazyComparisonChart-CIGW-MKW.css": {
+    "file": "assets/LazyComparisonChart-CIGW-MKW.css",
+    "src": "_LazyComparisonChart-CIGW-MKW.css"
   },
-  "_arrow-left-7QPZJuLl.js": {
-    "file": "assets/arrow-left-7QPZJuLl.js",
+  "_arrow-left-BgYJ4TXx.js": {
+    "file": "assets/arrow-left-BgYJ4TXx.js",
     "name": "arrow-left",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_badge-DpZ8TZHu.js": {
-    "file": "assets/badge-DpZ8TZHu.js",
+  "_badge-D_v6iEMF.js": {
+    "file": "assets/badge-D_v6iEMF.js",
     "name": "badge",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_circle-alert-Aq6ifIPX.js": {
-    "file": "assets/circle-alert-Aq6ifIPX.js",
+  "_circle-alert-Cyw8mw0u.js": {
+    "file": "assets/circle-alert-Cyw8mw0u.js",
     "name": "circle-alert",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_compass-Cq1oo3Xa.js": {
-    "file": "assets/compass-Cq1oo3Xa.js",
+  "_compass-BdRiG2pm.js": {
+    "file": "assets/compass-BdRiG2pm.js",
     "name": "compass",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_config-E9PhRRCg.js": {
-    "file": "assets/config-E9PhRRCg.js",
+  "_config-CNtJ7dC6.js": {
+    "file": "assets/config-CNtJ7dC6.js",
     "name": "config",
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_alert-B_6A4nCc.js",
-      "_circle-alert-Aq6ifIPX.js"
+      "_circle-alert-Cyw8mw0u.js"
     ]
   },
-  "_demo.form-bwi60QPT.js": {
-    "file": "assets/demo.form-bwi60QPT.js",
-    "name": "demo.form",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_input-CI4WR4HK.js",
-      "_select-CaEkAdgq.js",
-      "_label-CXBJFlTX.js"
-    ]
-  },
-  "_globe-J2Z3WNma.js": {
-    "file": "assets/globe-J2Z3WNma.js",
+  "_globe-sbuWZGaV.js": {
+    "file": "assets/globe-sbuWZGaV.js",
     "name": "globe",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_info-xdUJ7aFv.js": {
-    "file": "assets/info-xdUJ7aFv.js",
+  "_info-BxnANnrd.js": {
+    "file": "assets/info-BxnANnrd.js",
     "name": "info",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_input-CI4WR4HK.js": {
-    "file": "assets/input-CI4WR4HK.js",
+  "_input-Dcuoicru.js": {
+    "file": "assets/input-Dcuoicru.js",
     "name": "input",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_label-CXBJFlTX.js": {
-    "file": "assets/label-CXBJFlTX.js",
-    "name": "label",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "_leaflet-CIGW-MKW.css": {
-    "file": "assets/leaflet-CIGW-MKW.css",
-    "src": "_leaflet-CIGW-MKW.css"
-  },
-  "_leaflet-src-D8Cs4W_V.js": {
-    "file": "assets/leaflet-src-D8Cs4W_V.js",
+  "_leaflet-src-BOn6DA1B.js": {
+    "file": "assets/leaflet-src-BOn6DA1B.js",
     "name": "leaflet-src",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_navigation-DnyJmP0f.js": {
-    "file": "assets/navigation-DnyJmP0f.js",
-    "name": "navigation",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "_search-hEFOytY_.js": {
-    "file": "assets/search-hEFOytY_.js",
+  "_search-NRKEvCcW.js": {
+    "file": "assets/search-NRKEvCcW.js",
     "name": "search",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_select-CaEkAdgq.js": {
-    "file": "assets/select-CaEkAdgq.js",
+  "_select-DoP4Ndxy.js": {
+    "file": "assets/select-DoP4Ndxy.js",
     "name": "select",
     "imports": [
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_useAirports-D3rSrCu7.js": {
-    "file": "assets/useAirports-D3rSrCu7.js",
+  "_useAirports-DmeNsRr4.js": {
+    "file": "assets/useAirports-DmeNsRr4.js",
     "name": "useAirports",
     "imports": [
-      "_useQuery-t-Rchcwv.js",
-      "_config-E9PhRRCg.js",
+      "_config-CNtJ7dC6.js",
       "../../../../../~start/default-client-entry.tsx"
     ]
   },
-  "_useFlights-C_YEGNmx.js": {
-    "file": "assets/useFlights-C_YEGNmx.js",
+  "_useFlights-Ji1xa5Ep.js": {
+    "file": "assets/useFlights-Ji1xa5Ep.js",
     "name": "useFlights",
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_useQuery-t-Rchcwv.js",
-      "_config-E9PhRRCg.js"
-    ]
-  },
-  "_useQuery-t-Rchcwv.js": {
-    "file": "assets/useQuery-t-Rchcwv.js",
-    "name": "useQuery",
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
+      "_config-CNtJ7dC6.js"
     ]
   },
   "node_modules/.pnpm/react-leaflet@5.0.0_leaflet@1.9.4_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-leaflet/lib/index.js": {
-    "file": "assets/index-BhMu3qYC.js",
+    "file": "assets/index-CE07PzCI.js",
     "name": "index",
     "src": "node_modules/.pnpm/react-leaflet@5.0.0_leaflet@1.9.4_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-leaflet/lib/index.js",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_leaflet-src-D8Cs4W_V.js"
+      "_leaflet-src-BOn6DA1B.js"
+    ]
+  },
+  "src/components/airports/ComparisonChart.tsx": {
+    "file": "assets/ComparisonChart-DGYQZcSy.js",
+    "name": "ComparisonChart",
+    "src": "src/components/airports/ComparisonChart.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_LazyComparisonChart-B50SKzJz.js",
+      "_badge-D_v6iEMF.js",
+      "_select-DoP4Ndxy.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js",
+      "_globe-sbuWZGaV.js"
+    ]
+  },
+  "src/components/airports/MapView.tsx": {
+    "file": "assets/MapView-CB3_5zj4.js",
+    "name": "MapView",
+    "src": "src/components/airports/MapView.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_badge-D_v6iEMF.js",
+      "_LazyComparisonChart-B50SKzJz.js",
+      "_select-DoP4Ndxy.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js",
+      "_globe-sbuWZGaV.js"
+    ],
+    "dynamicImports": [
+      "_leaflet-src-BOn6DA1B.js",
+      "node_modules/.pnpm/react-leaflet@5.0.0_leaflet@1.9.4_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-leaflet/lib/index.js"
     ]
   },
   "src/routes/_404.tsx?tsr-split=component": {
-    "file": "assets/_404-DRE-ICyE.js",
+    "file": "assets/_404-Cqv9yyZh.js",
     "name": "_404",
     "src": "src/routes/_404.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_circle-alert-Aq6ifIPX.js",
-      "_arrow-left-7QPZJuLl.js",
-      "_search-hEFOytY_.js"
+      "_circle-alert-Cyw8mw0u.js",
+      "_arrow-left-BgYJ4TXx.js",
+      "_search-NRKEvCcW.js"
     ]
   },
   "src/routes/airports.$iataCode.tsx?tsr-split=component": {
-    "file": "assets/airports._iataCode-CEpBktuu.js",
+    "file": "assets/airports._iataCode-Bhso1bHe.js",
     "name": "airports._iataCode",
     "src": "src/routes/airports.$iataCode.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_useAirports-D3rSrCu7.js",
-      "_alert-B_6A4nCc.js",
-      "_config-E9PhRRCg.js",
-      "_badge-DpZ8TZHu.js",
-      "_arrow-left-7QPZJuLl.js",
-      "_navigation-DnyJmP0f.js",
-      "_globe-J2Z3WNma.js",
-      "_info-xdUJ7aFv.js",
-      "_compass-Cq1oo3Xa.js",
-      "_useQuery-t-Rchcwv.js",
-      "_circle-alert-Aq6ifIPX.js"
+      "_useAirports-DmeNsRr4.js",
+      "_badge-D_v6iEMF.js",
+      "_config-CNtJ7dC6.js",
+      "_arrow-left-BgYJ4TXx.js",
+      "_globe-sbuWZGaV.js",
+      "_info-BxnANnrd.js",
+      "_compass-BdRiG2pm.js",
+      "_circle-alert-Cyw8mw0u.js"
     ]
   },
   "src/routes/airports.tsx?tsr-split=component": {
-    "file": "assets/airports-CeM4djH7.js",
+    "file": "assets/airports-BENW_9G2.js",
     "name": "airports",
     "src": "src/routes/airports.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_useAirports-D3rSrCu7.js",
-      "_alert-B_6A4nCc.js",
-      "_config-E9PhRRCg.js",
-      "_badge-DpZ8TZHu.js",
-      "_MapView-BDQrTzqD.js",
-      "_AirportSearchBar-D-M_hrxm.js",
-      "_LocationList-BVZ1sNik.js",
-      "_useQuery-t-Rchcwv.js",
-      "_circle-alert-Aq6ifIPX.js",
-      "_input-CI4WR4HK.js",
-      "_search-hEFOytY_.js",
-      "_select-CaEkAdgq.js",
-      "_navigation-DnyJmP0f.js",
-      "_globe-J2Z3WNma.js"
-    ],
-    "css": [
-      "assets/leaflet-CIGW-MKW.css"
-    ]
-  },
-  "src/routes/demo.form.address.tsx?tsr-split=component": {
-    "file": "assets/demo.form.address-CVam63G4.js",
-    "name": "demo.form.address",
-    "src": "src/routes/demo.form.address.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_demo.form-bwi60QPT.js",
-      "_input-CI4WR4HK.js",
-      "_select-CaEkAdgq.js",
-      "_label-CXBJFlTX.js"
-    ]
-  },
-  "src/routes/demo.form.simple.tsx?tsr-split=component": {
-    "file": "assets/demo.form.simple-CYfrQXll.js",
-    "name": "demo.form.simple",
-    "src": "src/routes/demo.form.simple.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_demo.form-bwi60QPT.js",
-      "_input-CI4WR4HK.js",
-      "_select-CaEkAdgq.js",
-      "_label-CXBJFlTX.js"
-    ]
-  },
-  "src/routes/demo.locationlist.tsx?tsr-split=component": {
-    "file": "assets/demo.locationlist-CFC60qaa.js",
-    "name": "demo.locationlist",
-    "src": "src/routes/demo.locationlist.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_LocationList-BVZ1sNik.js",
-      "_badge-DpZ8TZHu.js",
-      "_select-CaEkAdgq.js",
-      "_input-CI4WR4HK.js",
-      "_search-hEFOytY_.js",
-      "_navigation-DnyJmP0f.js",
-      "_globe-J2Z3WNma.js"
-    ],
-    "css": [
-      "assets/leaflet-CIGW-MKW.css"
-    ]
-  },
-  "src/routes/demo.map-interactions.tsx?tsr-split=component": {
-    "file": "assets/demo.map-interactions-67l_gEmk.js",
-    "name": "demo.map-interactions",
-    "src": "src/routes/demo.map-interactions.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_MapView-BDQrTzqD.js",
-      "_badge-DpZ8TZHu.js",
-      "_alert-B_6A4nCc.js",
-      "_info-xdUJ7aFv.js"
-    ],
-    "css": [
-      "assets/leaflet-CIGW-MKW.css"
-    ]
-  },
-  "src/routes/demo.search-history.tsx?tsr-split=component": {
-    "file": "assets/demo.search-history-3ckGAOXM.js",
-    "name": "demo.search-history",
-    "src": "src/routes/demo.search-history.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "src/routes/demo.start.api-request.tsx?tsr-split=component": {
-    "file": "assets/demo.start.api-request-DoTXgqkP.js",
-    "name": "demo.start.api-request",
-    "src": "src/routes/demo.start.api-request.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "src/routes/demo.start.server-funcs.tsx?tsr-split=component": {
-    "file": "assets/demo.start.server-funcs-bQiQxfHp.js",
-    "name": "demo.start.server-funcs",
-    "src": "src/routes/demo.start.server-funcs.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "src/routes/demo.store.tsx?tsr-split=component": {
-    "file": "assets/demo.store-BOpcywOe.js",
-    "name": "demo.store",
-    "src": "src/routes/demo.store.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx"
-    ]
-  },
-  "src/routes/demo.tanstack-query.tsx?tsr-split=component": {
-    "file": "assets/demo.tanstack-query-Dbs_Uhn4.js",
-    "name": "demo.tanstack-query",
-    "src": "src/routes/demo.tanstack-query.tsx?tsr-split=component",
-    "isDynamicEntry": true,
-    "imports": [
-      "../../../../../~start/default-client-entry.tsx",
-      "_useQuery-t-Rchcwv.js"
+      "_config-CNtJ7dC6.js",
+      "_badge-D_v6iEMF.js",
+      "_LazyComparisonChart-B50SKzJz.js",
+      "_AirportSearchBar-E_w-omnX.js",
+      "_useAirports-DmeNsRr4.js",
+      "_circle-alert-Cyw8mw0u.js",
+      "_select-DoP4Ndxy.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js",
+      "_globe-sbuWZGaV.js"
     ]
   },
   "src/routes/favorites.tsx?tsr-split=component": {
-    "file": "assets/favorites-7SNEYwVF.js",
+    "file": "assets/favorites-Cv5a_58U.js",
     "name": "favorites",
     "src": "src/routes/favorites.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_badge-DpZ8TZHu.js",
-      "_EmptyState-wYioyc1e.js"
+      "_badge-D_v6iEMF.js",
+      "_LazyComparisonChart-B50SKzJz.js",
+      "_select-DoP4Ndxy.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js",
+      "_globe-sbuWZGaV.js"
     ]
   },
   "src/routes/flights.$flightId.tsx?tsr-split=component": {
-    "file": "assets/flights._flightId-pNtI5zBN.js",
+    "file": "assets/flights._flightId-CB7ZGGLn.js",
     "name": "flights._flightId",
     "src": "src/routes/flights.$flightId.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_useFlights-C_YEGNmx.js",
-      "_alert-B_6A4nCc.js",
-      "_config-E9PhRRCg.js",
-      "_badge-DpZ8TZHu.js",
-      "_arrow-left-7QPZJuLl.js",
-      "_navigation-DnyJmP0f.js",
-      "_compass-Cq1oo3Xa.js",
-      "_info-xdUJ7aFv.js",
-      "_useQuery-t-Rchcwv.js",
-      "_circle-alert-Aq6ifIPX.js"
+      "_useFlights-Ji1xa5Ep.js",
+      "_badge-D_v6iEMF.js",
+      "_config-CNtJ7dC6.js",
+      "_arrow-left-BgYJ4TXx.js",
+      "_compass-BdRiG2pm.js",
+      "_info-BxnANnrd.js",
+      "_circle-alert-Cyw8mw0u.js"
     ]
   },
   "src/routes/flights.tsx?tsr-split=component": {
-    "file": "assets/flights-Cn9T01bl.js",
+    "file": "assets/flights-CHmufkTO.js",
     "name": "flights",
     "src": "src/routes/flights.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_useFlights-C_YEGNmx.js",
-      "_input-CI4WR4HK.js",
-      "_search-hEFOytY_.js",
-      "_alert-B_6A4nCc.js",
-      "_config-E9PhRRCg.js",
-      "_EmptyState-wYioyc1e.js",
-      "_badge-DpZ8TZHu.js",
-      "_select-CaEkAdgq.js",
-      "_navigation-DnyJmP0f.js",
-      "_circle-alert-Aq6ifIPX.js",
-      "_useQuery-t-Rchcwv.js"
+      "_useFlights-Ji1xa5Ep.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js",
+      "_badge-D_v6iEMF.js",
+      "_config-CNtJ7dC6.js",
+      "_select-DoP4Ndxy.js",
+      "_circle-alert-Cyw8mw0u.js"
     ]
   },
   "src/routes/index.tsx?tsr-split=component": {
-    "file": "assets/index-DKxt3fGX.js",
+    "file": "assets/index-Co8JNHq-.js",
     "name": "index",
     "src": "src/routes/index.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_useAirports-D3rSrCu7.js",
-      "_alert-B_6A4nCc.js",
-      "_config-E9PhRRCg.js",
-      "_badge-DpZ8TZHu.js",
-      "_AirportSearchBar-D-M_hrxm.js",
-      "_globe-J2Z3WNma.js",
-      "_useQuery-t-Rchcwv.js",
-      "_circle-alert-Aq6ifIPX.js",
-      "_input-CI4WR4HK.js",
-      "_search-hEFOytY_.js"
-    ],
-    "css": [
-      "assets/leaflet-CIGW-MKW.css"
+      "_useAirports-DmeNsRr4.js",
+      "_badge-D_v6iEMF.js",
+      "_config-CNtJ7dC6.js",
+      "_LazyComparisonChart-B50SKzJz.js",
+      "_AirportSearchBar-E_w-omnX.js",
+      "_globe-sbuWZGaV.js",
+      "_circle-alert-Cyw8mw0u.js",
+      "_select-DoP4Ndxy.js",
+      "_input-Dcuoicru.js",
+      "_search-NRKEvCcW.js"
     ]
   },
   "src/routes/settings.tsx?tsr-split=component": {
-    "file": "assets/settings-Dv2OYD6T.js",
+    "file": "assets/settings-D2dBb-hZ.js",
     "name": "settings",
     "src": "src/routes/settings.tsx?tsr-split=component",
     "isDynamicEntry": true,
     "imports": [
       "../../../../../~start/default-client-entry.tsx",
-      "_select-CaEkAdgq.js",
-      "_label-CXBJFlTX.js",
-      "_globe-J2Z3WNma.js",
-      "_info-xdUJ7aFv.js"
+      "_select-DoP4Ndxy.js",
+      "_globe-sbuWZGaV.js",
+      "_info-BxnANnrd.js"
     ]
   }
 }
