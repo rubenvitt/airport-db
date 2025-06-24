@@ -132,6 +132,53 @@ export function useAirportDepartures(
   })
 }
 
+// Hook to get single flight by ICAO24
+export function useFlightByIcao24(
+  icao24: string,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: flightKeys.byAircraft(icao24, 0, 0),
+    queryFn: async () => {
+      // Get all current flights and find the one with matching icao24
+      const allFlights = await flightsApi.getAllStates()
+      return allFlights.find(flight => flight.icao24 === icao24) || null
+    },
+    staleTime: 10 * 1000,
+    gcTime: 30 * 1000,
+    enabled: !!icao24 && (options?.enabled ?? true),
+  })
+}
+
+// Hook to get flights for an airport (arrivals/departures)
+export function useAirportFlights(
+  airport: string,
+  options?: { 
+    type?: 'arrivals' | 'departures'
+    enabled?: boolean 
+  }
+) {
+  const now = Math.floor(Date.now() / 1000)
+  const oneHourAgo = now - 3600
+  
+  return useQuery({
+    queryKey: [...flightKeys.all, 'airport', airport, options?.type || 'all'],
+    queryFn: async () => {
+      // For free tier, we can only get current states, not historical arrivals/departures
+      // So we'll return current flights and filter by callsign prefix if possible
+      const allFlights = await flightsApi.getAllStates()
+      
+      // Try to filter by airport code in callsign (not perfect but better than nothing)
+      return allFlights.filter(flight => 
+        flight.callsign?.includes(airport) || false
+      )
+    },
+    staleTime: 30 * 1000,
+    gcTime: 60 * 1000,
+    enabled: !!airport && (options?.enabled ?? true),
+  })
+}
+
 // Suspense versions for SSR
 export function useSuspenseFlightStates() {
   return useSuspenseQuery({

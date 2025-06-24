@@ -1,39 +1,25 @@
 import { Link } from '@tanstack/react-router'
-import { Plane, MapPin, Moon, Sun, Menu, X } from 'lucide-react'
+import { Plane, MapPin, Moon, Sun, Menu, X, Heart, Settings, Home, Monitor } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useTheme } from '@/hooks/use-theme'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
-export default function Header() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+export function Header() {
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  // Initialize dark mode from localStorage or system preference
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true)
-      document.documentElement.classList.add('dark')
-    }
-  }, [])
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    } else {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    }
-  }
-
   const navItems = [
-    { to: '/', label: 'Dashboard', icon: MapPin },
+    { to: '/', label: 'Home', icon: Home },
     { to: '/airports', label: 'Airports', icon: MapPin },
     { to: '/flights', label: 'Live Flights', icon: Plane },
-    { to: '/about', label: 'About', icon: null },
+    { to: '/favorites', label: 'Favorites', icon: Heart },
+    { to: '/settings', label: 'Settings', icon: Settings },
   ]
 
   return (
@@ -64,20 +50,39 @@ export default function Header() {
 
         {/* Right side actions */}
         <div className="flex items-center space-x-2">
-          {/* Dark mode toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleDarkMode}
-            className="h-9 w-9"
-            aria-label="Toggle dark mode"
-          >
-            {isDarkMode ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </Button>
+          {/* Theme selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                aria-label="Select theme"
+              >
+                {theme === 'system' ? (
+                  <Monitor className="h-4 w-4" />
+                ) : resolvedTheme === 'dark' ? (
+                  <Moon className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme('light')}>
+                <Sun className="mr-2 h-4 w-4" />
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')}>
+                <Moon className="mr-2 h-4 w-4" />
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('system')}>
+                <Monitor className="mr-2 h-4 w-4" />
+                System
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Mobile menu toggle */}
           <Button

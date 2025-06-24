@@ -1,0 +1,374 @@
+{
+  "../../../../../~start/default-client-entry.tsx": {
+    "file": "assets/main-CFvVkEqF.js",
+    "name": "main",
+    "src": "../../../../../~start/default-client-entry.tsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/routes/settings.tsx?tsr-split=component",
+      "src/routes/flights.tsx?tsr-split=component",
+      "src/routes/favorites.tsx?tsr-split=component",
+      "src/routes/airports.tsx?tsr-split=component",
+      "src/routes/_404.tsx?tsr-split=component",
+      "src/routes/index.tsx?tsr-split=component",
+      "src/routes/flights.$flightId.tsx?tsr-split=component",
+      "src/routes/demo.tanstack-query.tsx?tsr-split=component",
+      "src/routes/demo.store.tsx?tsr-split=component",
+      "src/routes/airports.$iataCode.tsx?tsr-split=component",
+      "src/routes/demo.start.server-funcs.tsx?tsr-split=component",
+      "src/routes/demo.start.api-request.tsx?tsr-split=component",
+      "src/routes/demo.form.simple.tsx?tsr-split=component",
+      "src/routes/demo.form.address.tsx?tsr-split=component"
+    ],
+    "css": [
+      "assets/styles-by5O_Adr.css"
+    ],
+    "assets": [
+      "assets/styles-by5O_Adr.css"
+    ]
+  },
+  "/Users/rubeen/dev/personal/airport-db/src/styles.css": {
+    "file": "assets/styles-by5O_Adr.css",
+    "src": "/Users/rubeen/dev/personal/airport-db/src/styles.css"
+  },
+  "_EmptyState-jxTgstOS.js": {
+    "file": "assets/EmptyState-jxTgstOS.js",
+    "name": "EmptyState",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_SearchBar-DjQTFqut.js": {
+    "file": "assets/SearchBar-DjQTFqut.js",
+    "name": "SearchBar",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_input-DBD37HuN.js",
+      "_search-zl_FgLu0.js",
+      "_config-rvPVdp9M.js"
+    ]
+  },
+  "_arrow-left-D7pK5wgR.js": {
+    "file": "assets/arrow-left-D7pK5wgR.js",
+    "name": "arrow-left",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_badge-Dc-pGAuT.js": {
+    "file": "assets/badge-Dc-pGAuT.js",
+    "name": "badge",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_circle-alert-rxN8EaoI.js": {
+    "file": "assets/circle-alert-rxN8EaoI.js",
+    "name": "circle-alert",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_clock-B7djlEqd.js": {
+    "file": "assets/clock-B7djlEqd.js",
+    "name": "clock",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_compass-BHz0pXvP.js": {
+    "file": "assets/compass-BHz0pXvP.js",
+    "name": "compass",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_config-rvPVdp9M.js": {
+    "file": "assets/config-rvPVdp9M.js",
+    "name": "config",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_circle-alert-rxN8EaoI.js"
+    ]
+  },
+  "_demo.form-Clw6WJEM.js": {
+    "file": "assets/demo.form-Clw6WJEM.js",
+    "name": "demo.form",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_input-DBD37HuN.js",
+      "_select-CHeCbzJO.js",
+      "_label-BWUNGtXb.js"
+    ]
+  },
+  "_globe-DAK4EMcA.js": {
+    "file": "assets/globe-DAK4EMcA.js",
+    "name": "globe",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_info-CASCC0L3.js": {
+    "file": "assets/info-CASCC0L3.js",
+    "name": "info",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_input-DBD37HuN.js": {
+    "file": "assets/input-DBD37HuN.js",
+    "name": "input",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_label-BWUNGtXb.js": {
+    "file": "assets/label-BWUNGtXb.js",
+    "name": "label",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_navigation-CTHDuNs-.js": {
+    "file": "assets/navigation-CTHDuNs-.js",
+    "name": "navigation",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_search-zl_FgLu0.js": {
+    "file": "assets/search-zl_FgLu0.js",
+    "name": "search",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_select-CHeCbzJO.js": {
+    "file": "assets/select-CHeCbzJO.js",
+    "name": "select",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_useAirports-C2Nf3-Vp.js": {
+    "file": "assets/useAirports-C2Nf3-Vp.js",
+    "name": "useAirports",
+    "imports": [
+      "_useQuery-BtUuMQTT.js",
+      "_config-rvPVdp9M.js",
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "_useFlights-DNiIIlpO.js": {
+    "file": "assets/useFlights-DNiIIlpO.js",
+    "name": "useFlights",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useQuery-BtUuMQTT.js",
+      "_config-rvPVdp9M.js"
+    ]
+  },
+  "_useQuery-BtUuMQTT.js": {
+    "file": "assets/useQuery-BtUuMQTT.js",
+    "name": "useQuery",
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "src/routes/_404.tsx?tsr-split=component": {
+    "file": "assets/_404-2WHYZH5M.js",
+    "name": "_404",
+    "src": "src/routes/_404.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_circle-alert-rxN8EaoI.js",
+      "_arrow-left-D7pK5wgR.js",
+      "_search-zl_FgLu0.js"
+    ]
+  },
+  "src/routes/airports.$iataCode.tsx?tsr-split=component": {
+    "file": "assets/airports._iataCode-kyJaNm0D.js",
+    "name": "airports._iataCode",
+    "src": "src/routes/airports.$iataCode.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useAirports-C2Nf3-Vp.js",
+      "_config-rvPVdp9M.js",
+      "_badge-Dc-pGAuT.js",
+      "_arrow-left-D7pK5wgR.js",
+      "_navigation-CTHDuNs-.js",
+      "_globe-DAK4EMcA.js",
+      "_info-CASCC0L3.js",
+      "_clock-B7djlEqd.js",
+      "_compass-BHz0pXvP.js",
+      "_useQuery-BtUuMQTT.js",
+      "_circle-alert-rxN8EaoI.js"
+    ]
+  },
+  "src/routes/airports.tsx?tsr-split=component": {
+    "file": "assets/airports-BzD9GXY5.js",
+    "name": "airports",
+    "src": "src/routes/airports.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useAirports-C2Nf3-Vp.js",
+      "_SearchBar-DjQTFqut.js",
+      "_config-rvPVdp9M.js",
+      "_EmptyState-jxTgstOS.js",
+      "_badge-Dc-pGAuT.js",
+      "_navigation-CTHDuNs-.js",
+      "_globe-DAK4EMcA.js",
+      "_useQuery-BtUuMQTT.js",
+      "_input-DBD37HuN.js",
+      "_search-zl_FgLu0.js",
+      "_circle-alert-rxN8EaoI.js"
+    ]
+  },
+  "src/routes/demo.form.address.tsx?tsr-split=component": {
+    "file": "assets/demo.form.address-CnhufyRc.js",
+    "name": "demo.form.address",
+    "src": "src/routes/demo.form.address.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_demo.form-Clw6WJEM.js",
+      "_input-DBD37HuN.js",
+      "_select-CHeCbzJO.js",
+      "_label-BWUNGtXb.js"
+    ]
+  },
+  "src/routes/demo.form.simple.tsx?tsr-split=component": {
+    "file": "assets/demo.form.simple-ChOdtt-v.js",
+    "name": "demo.form.simple",
+    "src": "src/routes/demo.form.simple.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_demo.form-Clw6WJEM.js",
+      "_input-DBD37HuN.js",
+      "_select-CHeCbzJO.js",
+      "_label-BWUNGtXb.js"
+    ]
+  },
+  "src/routes/demo.start.api-request.tsx?tsr-split=component": {
+    "file": "assets/demo.start.api-request-B0TFQXcH.js",
+    "name": "demo.start.api-request",
+    "src": "src/routes/demo.start.api-request.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "src/routes/demo.start.server-funcs.tsx?tsr-split=component": {
+    "file": "assets/demo.start.server-funcs-BPqUFNXt.js",
+    "name": "demo.start.server-funcs",
+    "src": "src/routes/demo.start.server-funcs.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "src/routes/demo.store.tsx?tsr-split=component": {
+    "file": "assets/demo.store-CJzP919r.js",
+    "name": "demo.store",
+    "src": "src/routes/demo.store.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx"
+    ]
+  },
+  "src/routes/demo.tanstack-query.tsx?tsr-split=component": {
+    "file": "assets/demo.tanstack-query-DOQujheY.js",
+    "name": "demo.tanstack-query",
+    "src": "src/routes/demo.tanstack-query.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useQuery-BtUuMQTT.js"
+    ]
+  },
+  "src/routes/favorites.tsx?tsr-split=component": {
+    "file": "assets/favorites-CHYSbZxK.js",
+    "name": "favorites",
+    "src": "src/routes/favorites.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_badge-Dc-pGAuT.js",
+      "_EmptyState-jxTgstOS.js"
+    ]
+  },
+  "src/routes/flights.$flightId.tsx?tsr-split=component": {
+    "file": "assets/flights._flightId-CrqEe7r9.js",
+    "name": "flights._flightId",
+    "src": "src/routes/flights.$flightId.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useFlights-DNiIIlpO.js",
+      "_config-rvPVdp9M.js",
+      "_badge-Dc-pGAuT.js",
+      "_arrow-left-D7pK5wgR.js",
+      "_navigation-CTHDuNs-.js",
+      "_compass-BHz0pXvP.js",
+      "_info-CASCC0L3.js",
+      "_useQuery-BtUuMQTT.js",
+      "_circle-alert-rxN8EaoI.js"
+    ]
+  },
+  "src/routes/flights.tsx?tsr-split=component": {
+    "file": "assets/flights-C-0Pqij4.js",
+    "name": "flights",
+    "src": "src/routes/flights.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useFlights-DNiIIlpO.js",
+      "_SearchBar-DjQTFqut.js",
+      "_config-rvPVdp9M.js",
+      "_EmptyState-jxTgstOS.js",
+      "_badge-Dc-pGAuT.js",
+      "_select-CHeCbzJO.js",
+      "_clock-B7djlEqd.js",
+      "_navigation-CTHDuNs-.js",
+      "_circle-alert-rxN8EaoI.js",
+      "_useQuery-BtUuMQTT.js",
+      "_input-DBD37HuN.js",
+      "_search-zl_FgLu0.js"
+    ]
+  },
+  "src/routes/index.tsx?tsr-split=component": {
+    "file": "assets/index-BuQ8-WKb.js",
+    "name": "index",
+    "src": "src/routes/index.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_useAirports-C2Nf3-Vp.js",
+      "_SearchBar-DjQTFqut.js",
+      "_config-rvPVdp9M.js",
+      "_badge-Dc-pGAuT.js",
+      "_globe-DAK4EMcA.js",
+      "_useQuery-BtUuMQTT.js",
+      "_input-DBD37HuN.js",
+      "_search-zl_FgLu0.js",
+      "_circle-alert-rxN8EaoI.js"
+    ]
+  },
+  "src/routes/settings.tsx?tsr-split=component": {
+    "file": "assets/settings-B6IpBC1L.js",
+    "name": "settings",
+    "src": "src/routes/settings.tsx?tsr-split=component",
+    "isDynamicEntry": true,
+    "imports": [
+      "../../../../../~start/default-client-entry.tsx",
+      "_select-CHeCbzJO.js",
+      "_label-BWUNGtXb.js",
+      "_globe-DAK4EMcA.js",
+      "_info-CASCC0L3.js"
+    ]
+  }
+}

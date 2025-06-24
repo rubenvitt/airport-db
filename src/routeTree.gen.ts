@@ -11,9 +11,16 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as FlightsRouteImport } from './routes/flights'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as AirportsRouteImport } from './routes/airports'
+import { Route as R404RouteImport } from './routes/_404'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FlightsFlightIdRouteImport } from './routes/flights.$flightId'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as DemoStoreRouteImport } from './routes/demo.store'
+import { Route as AirportsIataCodeRouteImport } from './routes/airports.$iataCode'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
 import { Route as DemoFormSimpleRouteImport } from './routes/demo.form.simple'
@@ -22,10 +29,39 @@ import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-
 
 const rootServerRouteImport = createServerRootRoute()
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlightsRoute = FlightsRouteImport.update({
+  id: '/flights',
+  path: '/flights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AirportsRoute = AirportsRouteImport.update({
+  id: '/airports',
+  path: '/airports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R404Route = R404RouteImport.update({
+  id: '/_404',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const FlightsFlightIdRoute = FlightsFlightIdRouteImport.update({
+  id: '/$flightId',
+  path: '/$flightId',
+  getParentRoute: () => FlightsRoute,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
@@ -36,6 +72,11 @@ const DemoStoreRoute = DemoStoreRouteImport.update({
   id: '/demo/store',
   path: '/demo/store',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AirportsIataCodeRoute = AirportsIataCodeRouteImport.update({
+  id: '/$iataCode',
+  path: '/$iataCode',
+  getParentRoute: () => AirportsRoute,
 } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
   id: '/demo/start/server-funcs',
@@ -65,8 +106,14 @@ const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/airports': typeof AirportsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/flights': typeof FlightsRouteWithChildren
+  '/settings': typeof SettingsRoute
+  '/airports/$iataCode': typeof AirportsIataCodeRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/flights/$flightId': typeof FlightsFlightIdRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -74,8 +121,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/airports': typeof AirportsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/flights': typeof FlightsRouteWithChildren
+  '/settings': typeof SettingsRoute
+  '/airports/$iataCode': typeof AirportsIataCodeRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/flights/$flightId': typeof FlightsFlightIdRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -84,8 +137,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_404': typeof R404Route
+  '/airports': typeof AirportsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/flights': typeof FlightsRouteWithChildren
+  '/settings': typeof SettingsRoute
+  '/airports/$iataCode': typeof AirportsIataCodeRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/flights/$flightId': typeof FlightsFlightIdRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -95,8 +155,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/airports'
+    | '/favorites'
+    | '/flights'
+    | '/settings'
+    | '/airports/$iataCode'
     | '/demo/store'
     | '/demo/tanstack-query'
+    | '/flights/$flightId'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -104,8 +170,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/airports'
+    | '/favorites'
+    | '/flights'
+    | '/settings'
+    | '/airports/$iataCode'
     | '/demo/store'
     | '/demo/tanstack-query'
+    | '/flights/$flightId'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -113,8 +185,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_404'
+    | '/airports'
+    | '/favorites'
+    | '/flights'
+    | '/settings'
+    | '/airports/$iataCode'
     | '/demo/store'
     | '/demo/tanstack-query'
+    | '/flights/$flightId'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -123,6 +202,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  R404Route: typeof R404Route
+  AirportsRoute: typeof AirportsRouteWithChildren
+  FavoritesRoute: typeof FavoritesRoute
+  FlightsRoute: typeof FlightsRouteWithChildren
+  SettingsRoute: typeof SettingsRoute
   DemoStoreRoute: typeof DemoStoreRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
@@ -154,12 +238,54 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flights': {
+      id: '/flights'
+      path: '/flights'
+      fullPath: '/flights'
+      preLoaderRoute: typeof FlightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/airports': {
+      id: '/airports'
+      path: '/airports'
+      fullPath: '/airports'
+      preLoaderRoute: typeof AirportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_404': {
+      id: '/_404'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof R404RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/flights/$flightId': {
+      id: '/flights/$flightId'
+      path: '/$flightId'
+      fullPath: '/flights/$flightId'
+      preLoaderRoute: typeof FlightsFlightIdRouteImport
+      parentRoute: typeof FlightsRoute
     }
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
@@ -174,6 +300,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/store'
       preLoaderRoute: typeof DemoStoreRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/airports/$iataCode': {
+      id: '/airports/$iataCode'
+      path: '/$iataCode'
+      fullPath: '/airports/$iataCode'
+      preLoaderRoute: typeof AirportsIataCodeRouteImport
+      parentRoute: typeof AirportsRoute
     }
     '/demo/start/server-funcs': {
       id: '/demo/start/server-funcs'
@@ -217,8 +350,36 @@ declare module '@tanstack/react-start/server' {
   }
 }
 
+interface AirportsRouteChildren {
+  AirportsIataCodeRoute: typeof AirportsIataCodeRoute
+}
+
+const AirportsRouteChildren: AirportsRouteChildren = {
+  AirportsIataCodeRoute: AirportsIataCodeRoute,
+}
+
+const AirportsRouteWithChildren = AirportsRoute._addFileChildren(
+  AirportsRouteChildren,
+)
+
+interface FlightsRouteChildren {
+  FlightsFlightIdRoute: typeof FlightsFlightIdRoute
+}
+
+const FlightsRouteChildren: FlightsRouteChildren = {
+  FlightsFlightIdRoute: FlightsFlightIdRoute,
+}
+
+const FlightsRouteWithChildren =
+  FlightsRoute._addFileChildren(FlightsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  R404Route: R404Route,
+  AirportsRoute: AirportsRouteWithChildren,
+  FavoritesRoute: FavoritesRoute,
+  FlightsRoute: FlightsRouteWithChildren,
+  SettingsRoute: SettingsRoute,
   DemoStoreRoute: DemoStoreRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
