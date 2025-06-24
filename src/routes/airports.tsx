@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useMatchRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
 import { LoadingSpinner, ErrorMessage, EmptyState } from '@/components/common'
@@ -20,6 +20,14 @@ export const Route = createFileRoute('/airports')({
 })
 
 function AirportsExplorer() {
+  const matchRoute = useMatchRoute()
+  const isExactRoute = matchRoute({ to: '/airports', exact: true })
+  
+  // If we're on a child route (like /airports/FLL), render the outlet
+  if (!isExactRoute) {
+    return <Outlet />
+  }
+  
   const searchParams = Route.useSearch() as { code?: string }
   const initialCode = searchParams.code || ''
   const [searchQuery, setSearchQuery] = useState(initialCode)
