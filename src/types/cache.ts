@@ -7,7 +7,7 @@ export interface CacheConfig {
 
 export interface CacheItem<T> {
   data: T
-  source: 'cache' | 'api'
+  source: 'cache' | 'api' | 'in-memory'
   fetchedAt: number // Unix timestamp in milliseconds
   expiresAt: number // Unix timestamp in milliseconds
 }

@@ -2,6 +2,7 @@
 
 import Redis from 'ioredis'
 import { StructuredLogger, jsonTransport, prettyTransport } from '../../lib/cache/observability'
+import { CircuitBreaker, CircuitState, ExponentialBackoff } from './circuitBreaker'
 
 // Load environment variables for server-side only
 if (typeof window === 'undefined') {
@@ -25,6 +26,7 @@ export interface RedisConfig {
 }
 
 let redisClient: Redis | null = null
+let circuitBreaker: CircuitBreaker | null = null
 
 export function getRedisConfig(): RedisConfig {
   const config: RedisConfig = {}
@@ -55,6 +57,22 @@ export function getRedisConfig(): RedisConfig {
   return config
 }
 
+// Initialize circuit breaker for Redis operations
+function initializeCircuitBreaker(): CircuitBreaker {
+  if (!circuitBreaker) {
+    circuitBreaker = new CircuitBreaker({
+      name: 'redis',
+      failureThreshold: parseInt(process.env.REDIS_CIRCUIT_FAILURE_THRESHOLD || '5', 10),
+      resetTimeout: parseInt(process.env.REDIS_CIRCUIT_RESET_TIMEOUT || '60000', 10),
+      halfOpenRequests: parseInt(process.env.REDIS_CIRCUIT_HALF_OPEN_REQUESTS || '3', 10),
+      onStateChange: (oldState, newState) => {
+        logger.warn('Redis circuit breaker state changed', { oldState, newState })
+      }
+    })
+  }
+  return circuitBreaker
+}
+
 export async function getRedisClient(): Promise<Redis | null> {
   // Only initialize Redis on server
   if (typeof window !== 'undefined') {
@@ -65,47 +83,57 @@ export async function getRedisClient(): Promise<Redis | null> {
     return redisClient
   }
 
+  // Initialize circuit breaker
+  const breaker = initializeCircuitBreaker()
+
   try {
-    const config = getRedisConfig()
-    
-    logger.info('Initializing Redis connection', { 
-      host: config.host, 
-      port: config.port,
-      url: config.url ? 'configured' : 'not configured'
-    })
-    
-    redisClient = new Redis(config.url || config)
+    // Use circuit breaker for connection attempt
+    return await breaker.execute(async () => {
+      const config = getRedisConfig()
+      
+      logger.info('Initializing Redis connection', { 
+        host: config.host, 
+        port: config.port,
+        url: config.url ? 'configured' : 'not configured'
+      })
+      
+      redisClient = new Redis(config.url || config)
 
-    redisClient.on('connect', () => {
-      logger.info('Redis client connected')
-    })
+      redisClient.on('connect', () => {
+        logger.info('Redis client connected')
+      })
 
-    redisClient.on('error', (err) => {
-      logger.error('Redis client error', err)
-    })
+      redisClient.on('error', (err) => {
+        logger.error('Redis client error', err)
+      })
 
-    redisClient.on('ready', () => {
-      logger.info('Redis client ready to accept commands')
-    })
+      redisClient.on('ready', () => {
+        logger.info('Redis client ready to accept commands')
+      })
 
-    redisClient.on('close', () => {
-      logger.warn('Redis connection closed')
-    })
+      redisClient.on('close', () => {
+        logger.warn('Redis connection closed')
+      })
 
-    redisClient.on('reconnecting', (delay: number) => {
-      logger.info('Redis reconnecting', { delay })
-    })
+      redisClient.on('reconnecting', (delay: number) => {
+        logger.info('Redis reconnecting', { delay })
+      })
 
-    // Test the connection
-    await redisClient.ping()
-    logger.info('Redis connection established and tested')
-    
-    return redisClient
+      // Test the connection
+      await redisClient.ping()
+      logger.info('Redis connection established and tested')
+      
+      return redisClient
+    })
   } catch (error) {
     logger.error('Failed to initialize Redis client', error as Error)
     redisClient = null
     return null
   }
+}
+
+export function getRedisCircuitBreaker(): CircuitBreaker | null {
+  return circuitBreaker || initializeCircuitBreaker()
 }
 
 export async function closeRedisClient(): Promise<void> {
