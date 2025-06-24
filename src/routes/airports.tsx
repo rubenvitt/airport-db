@@ -1,18 +1,28 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
-import { LoadingSpinner, ErrorMessage, SearchBar, EmptyState } from '@/components/common'
+import { LoadingSpinner, ErrorMessage, EmptyState } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Globe, Navigation, Plane } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { MapView, AirportSearchBar, LocationList } from '@/components/airports'
+import type { Airport } from '@/types'
 
 export const Route = createFileRoute('/airports')({
   component: AirportsExplorer,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      code: search.code as string | undefined,
+    }
+  },
 })
 
 function AirportsExplorer() {
-  const [searchQuery, setSearchQuery] = useState('')
+  const searchParams = Route.useSearch() as { code?: string }
+  const initialCode = searchParams.code || ''
+  const [searchQuery, setSearchQuery] = useState(initialCode)
+  const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null)
   
   // For free tier, we can only search by IATA code (3 letters) or ICAO code (4 letters)
   const isValidIATA = searchQuery.length === 3 && /^[A-Z]{3}$/i.test(searchQuery)
@@ -41,6 +51,56 @@ function AirportsExplorer() {
   const error = errorIATA || errorICAO
   const airport = airportByIATA || airportByICAO
   const airports = airport ? [airport] : []
+  
+  // Auto-select airport when search result changes
+  useEffect(() => {
+    if (airport && !isLoading) {
+      setSelectedAirport(airport)
+    }
+  }, [airport, isLoading])
+
+  // Helper functions for favorites
+  const getFavoriteAirports = (): string[] => {
+    const saved = localStorage.getItem('favoriteAirports')
+    if (saved) {
+      const favorites = JSON.parse(saved) as Array<{ iata: string }>
+      return favorites.map(f => f.iata)
+    }
+    return []
+  }
+
+  const toggleFavorite = (airport: Airport) => {
+    const saved = localStorage.getItem('favoriteAirports')
+    let favorites: Array<{
+      iata: string
+      icao: string
+      name: string
+      city: string
+      country: string
+      addedAt: string
+    }> = saved ? JSON.parse(saved) : []
+
+    const existingIndex = favorites.findIndex(f => f.iata === airport.iata)
+    
+    if (existingIndex >= 0) {
+      // Remove from favorites
+      favorites.splice(existingIndex, 1)
+    } else {
+      // Add to favorites
+      favorites.push({
+        iata: airport.iata,
+        icao: airport.icao,
+        name: airport.name,
+        city: airport.city,
+        country: airport.country,
+        addedAt: new Date().toISOString(),
+      })
+    }
+
+    localStorage.setItem('favoriteAirports', JSON.stringify(favorites))
+    // Force re-render
+    setSelectedAirport(selectedAirport)
+  }
 
   return (
     <div className="container py-8 max-w-6xl mx-auto">
@@ -65,11 +125,12 @@ function AirportsExplorer() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SearchBar
+          <AirportSearchBar
             onSearch={setSearchQuery}
-            placeholder="Try LAX, KLAX, JFK, KJFK, LHR, EGLL..."
+            placeholder="Search by IATA or ICAO code..."
+            defaultValue={initialCode}
             isLoading={isLoading}
-            autoFocus
+            autoFocus={!initialCode}
           />
           <div className="mt-4 text-sm text-muted-foreground">
             <p className="font-medium mb-2">Popular airports to try:</p>
@@ -109,7 +170,32 @@ function AirportsExplorer() {
         </CardContent>
       </Card>
 
-      {/* Results Section */}
+      {/* Map and Location List Section */}
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <MapView
+            airports={airports}
+            selectedAirport={selectedAirport}
+            onAirportSelect={setSelectedAirport}
+            height="600px"
+            showControls
+          />
+        </div>
+        <div className="lg:col-span-1">
+          <LocationList
+            airports={airports}
+            selectedAirport={selectedAirport}
+            onAirportSelect={setSelectedAirport}
+            title="Search Results"
+            height="600px"
+            emptyMessage={searchQuery ? "No airports found matching your search" : "Search for airports to see them listed here"}
+            favoriteAirports={getFavoriteAirports()}
+            onToggleFavorite={toggleFavorite}
+          />
+        </div>
+      </div>
+
+      {/* Error and Loading States */}
       {error && (
         <ErrorMessage
           title="Search Error"
@@ -123,110 +209,6 @@ function AirportsExplorer() {
         <div className="flex justify-center py-12">
           <LoadingSpinner text="Searching airports..." />
         </div>
-      )}
-
-      {airports && airports.length > 0 && (
-        <div className="space-y-4">
-          {airports.map((airport) => (
-            <Card
-              key={`${airport.iata}-${airport.icao}`}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                      {airport.name}
-                      <Link
-                        to="/airports/$iataCode"
-                        params={{ iataCode: airport.iata }}
-                        className="text-primary hover:underline"
-                      >
-                        <Navigation className="h-5 w-5" />
-                      </Link>
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {airport.city}, {airport.region}, {airport.country}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Badge className="text-base">{airport.iata}</Badge>
-                    <Badge variant="secondary" className="text-base">{airport.icao}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Coordinates</p>
-                      <p className="font-medium">
-                        {airport.latitude.toFixed(6)}°, {airport.longitude.toFixed(6)}°
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Elevation</p>
-                      <p className="font-medium">{airport.elevation_ft.toLocaleString()} ft</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Timezone</p>
-                      <p className="font-medium">{airport.timezone}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Location Type</p>
-                      <p className="font-medium capitalize">International Airport</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Quick Actions</p>
-                      <div className="flex flex-col gap-2">
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${airport.latitude},${airport.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-primary hover:underline"
-                        >
-                          <Globe className="h-4 w-4" />
-                          View on Google Maps
-                        </a>
-                        <Link
-                          to="/flights"
-                          search={{ airport: airport.iata }}
-                          className="inline-flex items-center gap-2 text-primary hover:underline"
-                        >
-                          <Plane className="h-4 w-4" />
-                          View Live Flights
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {(isValidIATA || isValidICAO) && airports && airports.length === 0 && !isLoading && (
-        <EmptyState
-          title="No airport found"
-          message={`No airport found with code "${searchQuery}". Please check the code and try again.`}
-          icon={MapPin}
-        />
-      )}
-
-      {!searchQuery && (
-        <EmptyState
-          title="Search for an airport"
-          message="Enter an IATA or ICAO code above to get started"
-          icon={MapPin}
-        />
       )}
     </div>
   )

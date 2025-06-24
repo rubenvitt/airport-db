@@ -557,7 +557,7 @@
           3,
           5
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -565,7 +565,7 @@
             "description": "Create the main map component using a suitable mapping library",
             "dependencies": [],
             "details": "Choose and integrate a mapping library (e.g., Leaflet or Google Maps). Implement basic map functionality including zoom, pan, and marker placement.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -574,7 +574,7 @@
             "description": "Create a search bar component for location input",
             "dependencies": [],
             "details": "Implement an input field with autocomplete functionality. Integrate with a geocoding API for address lookup.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -583,7 +583,7 @@
             "description": "Create a component to display and manage saved locations",
             "dependencies": [],
             "details": "Develop a list view to show saved locations. Implement add, edit, and delete functionality for locations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1872,7 +1872,7 @@
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-23T20:17:47.186Z",
+      "updated": "2025-06-24T08:12:43.964Z",
       "description": "Tasks for master context"
     }
   }

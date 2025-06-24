@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useAirportByIATA, useAirportByICAO } from '@/hooks/api'
 import { LoadingSpinner, ErrorMessage, SearchBar } from '@/components/common'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plane, MapPin, Globe } from 'lucide-react'
+import { Plane, MapPin, Globe, Map } from 'lucide-react'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
@@ -100,10 +100,13 @@ function HomePage() {
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {airports.map((airport) => (
-              <Card
+              <Link
                 key={`${airport.iata}-${airport.icao}`}
-                className="hover:shadow-lg transition-shadow"
+                to="/airports"
+                search={{ code: airport.iata }}
+                className="block"
               >
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
@@ -136,20 +139,16 @@ function HomePage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Actions</p>
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${airport.latitude},${airport.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
-                      >
-                        <Globe className="h-3 w-3" />
-                        View on Map
-                      </a>
+                      <p className="text-muted-foreground">Click to view</p>
+                      <p className="font-medium flex items-center gap-1">
+                        <Map className="h-3 w-3" />
+                        Interactive Map
+                      </p>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
