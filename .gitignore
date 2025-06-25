@@ -35,4 +35,8 @@ node_modules/
 
 # TanStack build and temporary files
 .tanstack/start/build/
-.tanstack/tmp/ 
+.tanstack/tmp/
+
+# Next.js build output
+.next/
+out/ 
