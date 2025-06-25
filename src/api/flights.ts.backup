@@ -1,0 +1,339 @@
+// Flight API client for OpenSky Network with caching
+
+import { cachedFetch } from './cachedFetch'
+import { API_CONFIG } from './config'
+import type {
+  DepartureArrival,
+  FlightState,
+  FlightTrack,
+  FlightsResponse,
+} from '@/types/flight'
+import { RateLimiter } from '@/utils/security'
+
+// Client-side rate limiter for OpenSky Network
+// Anonymous: 10 calls/minute, Authenticated: 1000 calls/minute
+// We'll use conservative limits: 5 requests per minute for anonymous
+const rateLimiter = new RateLimiter(5, 60000)
+
+// Note: Authentication is now handled server-side for security
+// Client no longer needs to handle credentials directly
+
+export const flightsApi = {
+  /**
+   * Get all current flight states
+   * @param bbox Optional bounding box (min_lat, min_lon, max_lat, max_lon)
+   * @returns Current flight states
+   */
+  async getAllStates(bbox?: {
+    lamin: number
+    lomin: number
+    lamax: number
+    lomax: number
+  }): Promise<Array<FlightState>> {
+    // Check rate limit before making the request
+    if (!rateLimiter.canMakeRequest()) {
+      const resetTime = rateLimiter.getResetTime()
+      const waitTime = Math.max(0, resetTime - Date.now())
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
+      )
+    }
+
+    const response = await cachedFetch<any>(
+      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.allStates}`,
+      {
+        params: bbox,
+        cache: {
+          ttl: 30 * 1000, // 30 seconds for real-time flight data
+          persist: false, // Don't persist real-time data
+          staleWhileRevalidate: 10 * 1000, // Serve stale for 10s while fetching
+        },
+      },
+    )
+    
+    // Parse the OpenSky response format
+    // The API returns states as an array of arrays, not objects
+    if (!response || !response.states) {
+      return []
+    }
+    
+    return response.states.map((state: any[]): FlightState => ({
+      icao24: state[0] || '',
+      callsign: state[1] ? state[1].trim() : null,
+      origin_country: state[2] || '',
+      time_position: state[3] || null,
+      last_contact: state[4] || 0,
+      longitude: state[5] || null,
+      latitude: state[6] || null,
+      baro_altitude: state[7] || null,
+      on_ground: state[8] || false,
+      velocity: state[9] || null,
+      true_track: state[10] || null,
+      vertical_rate: state[11] || null,
+      sensors: state[12] || null,
+      geo_altitude: state[13] || null,
+      squawk: state[14] || null,
+      spi: state[15] || false,
+      position_source: state[16] || 0,
+    }))
+  },
+
+  /**
+   * Get flight track for a specific aircraft
+   * @param icao24 ICAO 24-bit address
+   * @param time Unix timestamp (uses current time - 30min if not provided)
+   * @returns Flight track data
+   */
+  async getFlightTrack(
+    icao24: string,
+    time?: number,
+  ): Promise<FlightTrack | null> {
+    // Check rate limit before making the request
+    if (!rateLimiter.canMakeRequest()) {
+      const resetTime = rateLimiter.getResetTime()
+      const waitTime = Math.max(0, resetTime - Date.now())
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
+      )
+    }
+
+    const timestamp = time || Math.floor(Date.now() / 1000) - 1800 // 30 min ago
+    const track = await cachedFetch<FlightTrack>(
+      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.tracks}`,
+      {
+        params: { icao24, time: timestamp },
+        cache: {
+          ttl: 5 * 60 * 1000, // 5 minutes for flight tracks
+          persist: true,
+        },
+      },
+    )
+    return track
+  },
+
+  /**
+   * Get flights by aircraft
+   * @param icao24 ICAO 24-bit address
+   * @param begin Start time (Unix timestamp)
+   * @param end End time (Unix timestamp)
+   * @returns Array of flights
+   */
+  async getFlightsByAircraft(
+    icao24: string,
+    begin: number,
+    end: number,
+  ): Promise<Array<DepartureArrival>> {
+    // Check rate limit before making the request
+    if (!rateLimiter.canMakeRequest()) {
+      const resetTime = rateLimiter.getResetTime()
+      const waitTime = Math.max(0, resetTime - Date.now())
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
+      )
+    }
+
+    const flights = await cachedFetch<Array<DepartureArrival>>(
+      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.aircraft}`,
+      {
+        params: { icao24, begin, end },
+        cache: {
+          ttl: 60 * 60 * 1000, // 1 hour for historical flight data
+          persist: true,
+        },
+      },
+    )
+    return flights
+  },
+
+  /**
+   * Get arrivals for an airport
+   * @param airport ICAO airport code
+   * @param begin Start time (Unix timestamp)
+   * @param end End time (Unix timestamp)
+   * @returns Array of arrival flights
+   */
+  async getAirportArrivals(
+    airport: string,
+    begin: number,
+    end: number,
+  ): Promise<Array<DepartureArrival>> {
+    // Check rate limit before making the request
+    if (!rateLimiter.canMakeRequest()) {
+      const resetTime = rateLimiter.getResetTime()
+      const waitTime = Math.max(0, resetTime - Date.now())
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
+      )
+    }
+
+    const response = await cachedFetch<any>(
+      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.arrival}`,
+      {
+        params: { airport, begin, end },
+        cache: {
+          ttl: 6 * 60 * 60 * 1000, // 6 hours for historical arrivals
+          persist: true,
+          staleWhileRevalidate: 60 * 60 * 1000, // 1 hour stale grace period
+        },
+      },
+    )
+    
+    // Ensure we always return an array
+    if (!response) return []
+    
+    // If response is a string (from cache), parse it
+    if (typeof response === 'string') {
+      try {
+        const parsed = JSON.parse(response)
+        if (Array.isArray(parsed)) return parsed
+        return []
+      } catch (e) {
+        console.error('Failed to parse arrivals response:', e)
+        return []
+      }
+    }
+    
+    if (Array.isArray(response)) return response
+    
+    // If the response is an object with a data property
+    if (response && typeof response === 'object' && 'data' in response) {
+      return Array.isArray(response.data) ? response.data : []
+    }
+    
+    // If the response is an object with arrivals property (possible API response format)
+    if (response && typeof response === 'object' && 'arrivals' in response) {
+      return Array.isArray(response.arrivals) ? response.arrivals : []
+    }
+    
+    return []
+  },
+
+  /**
+   * Get departures for an airport
+   * @param airport ICAO airport code
+   * @param begin Start time (Unix timestamp)
+   * @param end End time (Unix timestamp)
+   * @returns Array of departure flights
+   */
+  async getAirportDepartures(
+    airport: string,
+    begin: number,
+    end: number,
+  ): Promise<Array<DepartureArrival>> {
+    // Check rate limit before making the request
+    if (!rateLimiter.canMakeRequest()) {
+      const resetTime = rateLimiter.getResetTime()
+      const waitTime = Math.max(0, resetTime - Date.now())
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
+      )
+    }
+
+    const response = await cachedFetch<any>(
+      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.departure}`,
+      {
+        params: { airport, begin, end },
+        cache: {
+          ttl: 6 * 60 * 60 * 1000, // 6 hours for historical departures
+          persist: true,
+          staleWhileRevalidate: 60 * 60 * 1000, // 1 hour stale grace period
+        },
+      },
+    )
+    
+    // Ensure we always return an array
+    if (!response) return []
+    
+    // If response is a string (from cache), parse it
+    if (typeof response === 'string') {
+      try {
+        const parsed = JSON.parse(response)
+        if (Array.isArray(parsed)) return parsed
+        return []
+      } catch (e) {
+        console.error('Failed to parse departures response:', e)
+        return []
+      }
+    }
+    
+    if (Array.isArray(response)) return response
+    
+    // If the response is an object with a data property
+    if (response && typeof response === 'object' && 'data' in response) {
+      return Array.isArray(response.data) ? response.data : []
+    }
+    
+    // If the response is an object with departures property (possible API response format)
+    if (response && typeof response === 'object' && 'departures' in response) {
+      return Array.isArray(response.departures) ? response.departures : []
+    }
+    
+    return []
+  },
+
+  /**
+   * Helper to get current flights within a radius of a location
+   * @param lat Latitude
+   * @param lon Longitude
+   * @param radius Radius in degrees (approximately 111km per degree)
+   * @returns Current flight states in the area
+   */
+  async getFlightsNearLocation(
+    lat: number,
+    lon: number,
+    radius: number,
+  ): Promise<Array<FlightState>> {
+    const bbox = {
+      lamin: lat - radius,
+      lomin: lon - radius,
+      lamax: lat + radius,
+      lomax: lon + radius,
+    }
+    
+    // Check rate limit before making the request
+    if (!rateLimiter.canMakeRequest()) {
+      const resetTime = rateLimiter.getResetTime()
+      const waitTime = Math.max(0, resetTime - Date.now())
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
+      )
+    }
+
+    const response = await cachedFetch<any>(
+      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.allStates}`,
+      {
+        params: bbox,
+        cache: {
+          ttl: 5 * 60 * 1000, // 5 minutes for airport-specific searches
+          persist: true, // Persist airport searches
+          staleWhileRevalidate: 30 * 1000, // 30s stale grace period
+        },
+      },
+    )
+    
+    // Parse the OpenSky response format
+    if (!response || !response.states) {
+      return []
+    }
+    
+    return response.states.map((state: any[]): FlightState => ({
+      icao24: state[0] || '',
+      callsign: state[1] ? state[1].trim() : null,
+      origin_country: state[2] || '',
+      time_position: state[3] || null,
+      last_contact: state[4] || 0,
+      longitude: state[5] || null,
+      latitude: state[6] || null,
+      baro_altitude: state[7] || null,
+      on_ground: state[8] || false,
+      velocity: state[9] || null,
+      true_track: state[10] || null,
+      vertical_rate: state[11] || null,
+      sensors: state[12] || null,
+      geo_altitude: state[13] || null,
+      squawk: state[14] || null,
+      spi: state[15] || false,
+      position_source: state[16] || 0,
+    }))
+  },
+}

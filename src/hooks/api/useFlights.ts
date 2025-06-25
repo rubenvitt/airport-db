@@ -1,6 +1,6 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import type { DepartureArrival, FlightsResponse } from '@/types/flight'
-import { flightsApi } from '@/api'
+import { flightsFetchApi } from '@/api/flights-fetch'
 
 // Query keys factory
 export const flightKeys = {
@@ -27,7 +27,10 @@ export function useAllFlightStates(options?: {
 }) {
   return useQuery({
     queryKey: flightKeys.states(),
-    queryFn: () => flightsApi.getAllStates(),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getAllStates()
+      return response.flights
+    },
     staleTime: 10 * 1000, // 10 seconds
     gcTime: 30 * 1000, // 30 seconds
     refetchInterval: options?.refetchInterval ?? 30 * 1000, // Default 30s refresh
@@ -45,7 +48,10 @@ export function useFlightStatesByBounds(
 ) {
   return useQuery({
     queryKey: flightKeys.statesByBounds(bounds),
-    queryFn: () => flightsApi.getAllStates(bounds),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getAllStates(bounds)
+      return response.flights
+    },
     staleTime: 10 * 1000,
     gcTime: 30 * 1000,
     refetchInterval: options?.refetchInterval ?? 30 * 1000,
@@ -65,7 +71,10 @@ export function useFlightsNearLocation(
 ) {
   return useQuery({
     queryKey: flightKeys.statesNearLocation(lat, lon, radius),
-    queryFn: () => flightsApi.getFlightsNearLocation(lat, lon, radius),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getFlightsNearLocation(lat, lon, radius)
+      return response.flights
+    },
     staleTime: 10 * 1000,
     gcTime: 30 * 1000,
     refetchInterval: options?.refetchInterval ?? 30 * 1000,
@@ -77,7 +86,10 @@ export function useFlightsNearLocation(
 export function useFlightTrack(icao24: string, time?: number) {
   return useQuery({
     queryKey: flightKeys.track(icao24, time),
-    queryFn: () => flightsApi.getFlightTrack(icao24, time),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getFlightTrack(icao24, time)
+      return response.track
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     enabled: !!icao24,
@@ -93,7 +105,10 @@ export function useFlightsByAircraft(
 ) {
   return useQuery({
     queryKey: flightKeys.byAircraft(icao24, begin, end),
-    queryFn: () => flightsApi.getFlightsByAircraft(icao24, begin, end),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getFlightsByAircraft(icao24, begin, end)
+      return response.flights
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     enabled: !!icao24 && !!begin && !!end && (options?.enabled ?? true),
@@ -109,9 +124,12 @@ export function useAirportArrivals(
 ) {
   return useQuery({
     queryKey: flightKeys.arrivals(airport, begin, end),
-    queryFn: () => flightsApi.getAirportArrivals(airport, begin, end),
-    staleTime: 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: async () => {
+      const response = await flightsFetchApi.getAirportArrivals(airport, begin, end)
+      return response.arrivals
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour - historical data doesn't change
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
     enabled: !!airport && !!begin && !!end && (options?.enabled ?? true),
   })
 }
@@ -125,9 +143,12 @@ export function useAirportDepartures(
 ) {
   return useQuery({
     queryKey: flightKeys.departures(airport, begin, end),
-    queryFn: () => flightsApi.getAirportDepartures(airport, begin, end),
-    staleTime: 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: async () => {
+      const response = await flightsFetchApi.getAirportDepartures(airport, begin, end)
+      return response.departures
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour - historical data doesn't change
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
     enabled: !!airport && !!begin && !!end && (options?.enabled ?? true),
   })
 }
@@ -141,8 +162,8 @@ export function useFlightByIcao24(
     queryKey: flightKeys.byAircraft(icao24, 0, 0),
     queryFn: async () => {
       // Get all current flights and find the one with matching icao24
-      const allFlights = await flightsApi.getAllStates()
-      return allFlights.find(flight => flight.icao24 === icao24) || null
+      const response = await flightsFetchApi.getAllStates()
+      return response.flights.states.find(flight => flight.icao24 === icao24) || null
     },
     staleTime: 10 * 1000,
     gcTime: 30 * 1000,
@@ -165,16 +186,40 @@ export function useAirportFlights(
     queryKey: [...flightKeys.all, 'airport', airport, options?.type || 'all'],
     queryFn: async () => {
       // For free tier, we can only get current states, not historical arrivals/departures
-      // So we'll return current flights and filter by callsign prefix if possible
-      const allFlights = await flightsApi.getAllStates()
+      // If searching by IATA code (3 letters), we need to get airport info first
+      if (airport.length === 3) {
+        // Import the airports API to convert IATA to ICAO
+        const { airportsApi } = await import('@/api')
+        
+        try {
+          // Get airport details to find ICAO code
+          const airportData = await airportsApi.getAirportByIATA(airport.toUpperCase())
+          if (airportData && airportData.icao) {
+            // Get flights near the airport coordinates
+            const response = await flightsFetchApi.getFlightsNearLocation(
+              airportData.latitude,
+              airportData.longitude,
+              1.5 // ~165km radius - larger area to catch more flights
+            )
+            
+            // Return all flights in the area since we can't filter by actual airport
+            return response.flights
+          }
+        } catch (error) {
+          console.error('Failed to get airport data:', error)
+        }
+      }
+      
+      // If ICAO code (4 letters) or fallback
+      const response = await flightsFetchApi.getAllStates()
       
       // Try to filter by airport code in callsign (not perfect but better than nothing)
-      return allFlights.filter(flight => 
-        flight.callsign?.includes(airport) || false
+      return response.flights.states.filter(flight => 
+        flight.callsign?.toUpperCase().includes(airport.toUpperCase()) || false
       )
     },
-    staleTime: 30 * 1000,
-    gcTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes - airport-specific searches can be cached longer
+    gcTime: 30 * 60 * 1000, // 30 minutes
     enabled: !!airport && (options?.enabled ?? true),
   })
 }
@@ -183,7 +228,10 @@ export function useAirportFlights(
 export function useSuspenseFlightStates() {
   return useSuspenseQuery({
     queryKey: flightKeys.states(),
-    queryFn: () => flightsApi.getAllStates(),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getAllStates()
+      return response.flights
+    },
     staleTime: 10 * 1000,
     gcTime: 30 * 1000,
   })
@@ -196,7 +244,10 @@ export function useSuspenseFlightsNearLocation(
 ) {
   return useSuspenseQuery({
     queryKey: flightKeys.statesNearLocation(lat, lon, radius),
-    queryFn: () => flightsApi.getFlightsNearLocation(lat, lon, radius),
+    queryFn: async () => {
+      const response = await flightsFetchApi.getFlightsNearLocation(lat, lon, radius)
+      return response.flights
+    },
     staleTime: 10 * 1000,
     gcTime: 30 * 1000,
   })

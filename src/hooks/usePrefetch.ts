@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect } from 'react'
 import { prefetch } from '@/api/cachedFetch'
-import { API_CONFIG } from '@/api/config'
 
 export function usePrefetch() {
   // Prefetch airport data on hover
   const prefetchAirport = useCallback(async (iataCode: string) => {
     if (!iataCode || iataCode.length !== 3) return
     
-    const url = `${API_CONFIG.apiNinjas.baseUrl}${API_CONFIG.apiNinjas.endpoints.airports}`
+    const url = `/api/airports`
     await prefetch(url, {
       params: { iata: iataCode },
       cache: {
@@ -26,29 +25,8 @@ export function usePrefetch() {
     const now = Math.floor(Date.now() / 1000)
     const oneHourAgo = now - 3600
     
-    // Prefetch arrivals
-    await prefetch(
-      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.arrival}`,
-      {
-        params: { airport: icaoCode, begin: oneHourAgo, end: now },
-        cache: {
-          ttl: 5 * 60 * 1000, // 5 minutes
-          persist: true,
-        },
-      }
-    )
-    
-    // Prefetch departures
-    await prefetch(
-      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.flights.departure}`,
-      {
-        params: { airport: icaoCode, begin: oneHourAgo, end: now },
-        cache: {
-          ttl: 5 * 60 * 1000, // 5 minutes
-          persist: true,
-        },
-      }
-    )
+    // Note: These endpoints are not yet implemented in Next.js API routes
+    // TODO: Implement /api/flights/arrivals/[airport] and /api/flights/departures/[airport]
   }, [])
 
   // Prefetch flights in area
@@ -59,7 +37,7 @@ export function usePrefetch() {
     lomax: number
   }) => {
     await prefetch(
-      `${API_CONFIG.openSky.baseUrl}${API_CONFIG.openSky.endpoints.allStates}`,
+      `/api/flights/states`,
       {
         params: bounds,
         cache: {

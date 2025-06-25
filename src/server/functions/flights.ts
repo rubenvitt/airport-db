@@ -3,6 +3,7 @@
 import { createServerFn } from '@tanstack/start'
 import { getRedisClient } from '../services/redisClient'
 import { concurrencyManager } from '../services/concurrencyManager'
+import { openskyAuth } from '../services/openskyAuth'
 import type {
   DepartureArrival,
   FlightState,
@@ -13,8 +14,6 @@ import type { CacheItem } from '@/types/cache'
 
 // External API configuration
 const OPENSKY_URL = process.env.VITE_OPENSKY_API_URL || 'https://opensky-network.org/api'
-const OPENSKY_USERNAME = process.env.VITE_OPENSKY_USERNAME
-const OPENSKY_PASSWORD = process.env.VITE_OPENSKY_PASSWORD
 
 // Cache configuration
 const CACHE_TTL = {
@@ -24,13 +23,9 @@ const CACHE_TTL = {
   airport: 5 * 60, // 5 minutes for airport arrivals/departures
 }
 
-// Helper to get auth headers
-function getAuthHeaders(): HeadersInit {
-  if (OPENSKY_USERNAME && OPENSKY_PASSWORD) {
-    const auth = Buffer.from(`${OPENSKY_USERNAME}:${OPENSKY_PASSWORD}`).toString('base64')
-    return { Authorization: `Basic ${auth}` }
-  }
-  return {}
+// Helper to get auth headers using OAuth2 or Basic Auth
+async function getAuthHeaders(): Promise<HeadersInit> {
+  return openskyAuth.getAuthHeaders()
 }
 
 // Helper to fetch from OpenSky API
@@ -48,7 +43,7 @@ async function fetchFromOpenSky<T>(
   }
 
   const response = await fetch(url.toString(), {
-    headers: getAuthHeaders(),
+    headers: await getAuthHeaders(),
   })
 
   if (!response.ok) {
@@ -239,5 +234,22 @@ export const getFlightsNearLocation = createServerFn(
     }
 
     return getAllFlightStates(bbox)
+  }
+)
+
+// Server function to get authentication status
+export const getOpenSkyAuthStatus = createServerFn(
+  'GET',
+  async (): Promise<{
+    authType: 'oauth2' | 'basic' | 'none'
+    isAuthenticated: boolean
+  }> => {
+    const authType = openskyAuth.getAuthType()
+    const isAuthenticated = authType !== 'none'
+    
+    return {
+      authType,
+      isAuthenticated,
+    }
   }
 )

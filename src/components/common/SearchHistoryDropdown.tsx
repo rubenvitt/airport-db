@@ -1,5 +1,7 @@
+'use client'
+
 import { Clock, MapPin, Plane, X } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import Link from 'next/link'
 import { useSearchHistory } from '@/contexts/AppContext'
 import {
   DropdownMenu,
@@ -52,8 +54,10 @@ export function SearchHistoryDropdown({ children }: SearchHistoryDropdownProps) 
             {searchHistory.slice(0, 5).map((item, index) => (
               <DropdownMenuItem key={index} asChild>
                 <Link
-                  to={item.type === 'airport' ? '/airports' : '/flights'}
-                  search={item.type === 'airport' ? { code: item.query } : { query: item.query }}
+                  href={item.type === 'airport' 
+                    ? `/airports?code=${encodeURIComponent(item.query)}` 
+                    : `/flights?query=${encodeURIComponent(item.query)}`
+                  }
                   className="flex items-center gap-2"
                 >
                   {item.type === 'airport' ? (
@@ -81,8 +85,7 @@ export function SearchHistoryDropdown({ children }: SearchHistoryDropdownProps) 
             {recentAirports.slice(0, 5).map((airport) => (
               <DropdownMenuItem key={airport.iata} asChild>
                 <Link
-                  to="/airports/$icaoCode"
-                  params={{ icaoCode: airport.icao }}
+                  href={`/airports/${airport.icao}`}
                   className="flex items-center gap-2"
                 >
                   <MapPin className="h-4 w-4 text-muted-foreground" />

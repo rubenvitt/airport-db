@@ -11,8 +11,11 @@ export function useTheme() {
   })
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
+    
     const applyTheme = () => {
       let resolved: 'light' | 'dark' = 'light'
 
@@ -58,6 +61,7 @@ export function useTheme() {
     theme,
     setTheme: updateTheme,
     resolvedTheme,
+    isClient,
   }
 }
 

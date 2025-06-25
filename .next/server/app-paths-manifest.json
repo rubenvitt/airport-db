@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/airports/[code]/route": "app/api/airports/[code]/route.js",
+  "/page": "app/page.js",
+  "/airports/page": "app/airports/page.js",
+  "/airports/[code]/page": "app/airports/[code]/page.js",
+  "/favorites/page": "app/favorites/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/flights/page": "app/flights/page.js"
+}

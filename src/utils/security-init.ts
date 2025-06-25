@@ -40,25 +40,14 @@ export function initializeSecurity() {
 
 /**
  * Check if API keys are properly configured
+ * In Next.js, we don't validate API keys on the client side since they're only used server-side
  */
 export function validateApiKeys() {
-  const requiredEnvVars = ['VITE_OPENSKY_API_URL', 'VITE_API_NINJAS_API_URL']
-  const missingVars = requiredEnvVars.filter(
-    (varName) => !import.meta.env[varName]
-  )
-
-  if (missingVars.length > 0) {
-    console.error(
-      `Missing required environment variables: ${missingVars.join(', ')}`
-    )
-    return false
+  // In Next.js, API keys are handled server-side only
+  // Client doesn't need to validate them
+  if (process.env.NODE_ENV === 'development') {
+    console.log('API keys are handled server-side in Next.js')
   }
-
-  // Check if API Ninjas key is set (required) - check both possible variable names
-  if (!import.meta.env.VITE_API_NINJAS_API_KEY && !import.meta.env.VITE_API_NINJAS_KEY) {
-    console.error('API Ninjas API key is required but not set (VITE_API_NINJAS_API_KEY or VITE_API_NINJAS_KEY)')
-    return false
-  }
-
+  
   return true
 }

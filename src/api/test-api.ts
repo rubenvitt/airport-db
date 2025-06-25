@@ -1,6 +1,7 @@
 // Simple API test file to verify the setup
 
-import { airportsApi, flightsApi } from './index'
+import { airportsApi } from './index'
+import { flightsServerApi } from './flights-server'
 
 export async function testApiConnection() {
   console.log('Testing API connections...')
@@ -17,11 +18,11 @@ export async function testApiConnection() {
     console.error('❌ Airport API Error:', error)
   }
 
-  // Test Flight API
+  // Test Flight API (Server-side)
   try {
-    console.log('\n2. Testing Flight API (OpenSky Network)...')
-    // Get flights in a small area (anonymous access has limitations)
-    const flights = await flightsApi.getFlightsNearLocation(
+    console.log('\n2. Testing Flight API (Server-side via OpenSky Network)...')
+    // Get flights in a small area (uses server API now)
+    const flights = await flightsServerApi.getFlightsNearLocation(
       34.0522, // LA latitude
       -118.2437, // LA longitude
       0.5, // Small radius to avoid too many results

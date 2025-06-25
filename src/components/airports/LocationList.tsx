@@ -1,3 +1,5 @@
+'use client'
+
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { 
   BarChart3, 
@@ -15,7 +17,7 @@ import {
   Star,
   X
 } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import Link from 'next/link'
 import { LocationListSkeleton } from './LocationListSkeleton'
 import type { Airport } from '@/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -356,8 +358,7 @@ function LocationListComponent({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Link 
-                              to="/airports/$icaoCode" 
-                              params={{ icaoCode: airport.icao }}
+                              href={`/airports/${airport.icao}`}
                               onClick={(e) => e.stopPropagation()}
                             >
                               <Button

@@ -8,6 +8,7 @@ interface SearchBarProps {
   onSearch: (query: string) => void
   placeholder?: string
   defaultValue?: string
+  value?: string
   isLoading?: boolean
   className?: string
   debounceMs?: number
@@ -20,6 +21,7 @@ export function SearchBar({
   onSearch,
   placeholder = 'Search...',
   defaultValue = '',
+  value: controlledValue,
   isLoading = false,
   className,
   debounceMs = 300,
@@ -27,8 +29,16 @@ export function SearchBar({
   showClearButton = true,
   autoFocus = false,
 }: SearchBarProps) {
-  const [value, setValue] = useState(defaultValue)
-  const [debouncedValue, setDebouncedValue] = useState(defaultValue)
+  const [value, setValue] = useState(controlledValue ?? defaultValue)
+  const [debouncedValue, setDebouncedValue] = useState(controlledValue ?? defaultValue)
+  
+  // Update internal state when controlled value changes
+  useEffect(() => {
+    if (controlledValue !== undefined) {
+      setValue(controlledValue)
+      setDebouncedValue(controlledValue)
+    }
+  }, [controlledValue])
 
   // Debounce the search value
   useEffect(() => {
