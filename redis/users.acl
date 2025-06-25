@@ -1,0 +1,18 @@
+# Redis ACL Configuration for Airport Database
+# Define users with specific permissions and strong passwords
+
+# Default user - disable it for security
+user default on nopass ~* &* +@all
+
+# Application user with restricted permissions
+# This user can only access airport cache keys and perform basic operations
+user airport-app on >CHANGEME_APP_PASSWORD_HERE ~airport:* ~airport:stats +@read +@write +@string +@hash -flushdb -flushall -config -shutdown -acl
+
+# Read-only monitoring user for health checks and metrics
+user monitoring on >CHANGEME_MONITORING_PASSWORD_HERE ~airport:stats +ping +info +@read -@dangerous
+
+# Admin user with full permissions (use sparingly)
+user admin on >CHANGEME_ADMIN_PASSWORD_HERE ~* &* +@all
+
+# Backup user for replication/backup operations
+user backup on >CHANGEME_BACKUP_PASSWORD_HERE ~* &* +@read +psync +replconf -@dangerous

@@ -1,0 +1,234 @@
+name: Cache Layer Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/server/services/**'
+      - 'src/server/functions/**'
+      - 'tests/**'
+      - '.github/workflows/cache-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/server/services/**'
+      - 'src/server/functions/**'
+      - 'tests/**'
+
+jobs:
+  test:
+    name: Run Cache Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+        redis-version: ['7-alpine', '6-alpine']
+    
+    services:
+      redis:
+        image: redis:${{ matrix.redis-version }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linter
+        run: pnpm lint src/server/services
+
+      - name: Run type check
+        run: pnpm tsc --noEmit
+
+      - name: Run unit tests
+        run: pnpm test src/server/services/__tests__/*.test.ts --reporter=junit --outputFile=test-results/unit.xml
+        env:
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Run integration tests
+        run: pnpm test src/server/services/__tests__/airportCacheIntegration.test.ts --reporter=junit --outputFile=test-results/integration.xml
+        env:
+          NODE_ENV: test
+          
+      - name: Run performance tests
+        run: pnpm test src/server/services/__tests__/cachePerformance.test.ts --reporter=junit --outputFile=test-results/performance.xml
+        env:
+          NODE_ENV: test
+          
+      - name: Run security tests  
+        run: pnpm test src/server/services/__tests__/cacheSecurity.test.ts --reporter=junit --outputFile=test-results/security.xml
+        env:
+          NODE_ENV: test
+
+      - name: Generate coverage report
+        run: pnpm test src/server/services/__tests__ --coverage --coverageReporters=lcov --coverageReporters=text
+        env:
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: cache-layer
+          name: cache-coverage-${{ matrix.node-version }}-redis-${{ matrix.redis-version }}
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.node-version }}-redis-${{ matrix.redis-version }}
+          path: test-results/
+          retention-days: 30
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports-${{ matrix.node-version }}-redis-${{ matrix.redis-version }}
+          path: coverage/
+          retention-days: 30
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run npm audit
+        run: |
+          npm audit --production --audit-level=moderate || true
+          
+  load-test:
+    name: Load Testing
+    runs-on: ubuntu-latest
+    needs: test
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Start application
+        run: |
+          pnpm start &
+          sleep 10
+        env:
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: production
+          PORT: 3000
+
+      - name: Run load tests with autocannon
+        run: |
+          npx autocannon -c 50 -d 30 -p 10 \
+            --renderStatusCodes \
+            --json \
+            http://localhost:3000/api/airports?iata=LAX \
+            > load-test-results.json
+            
+      - name: Analyze load test results
+        run: |
+          node -e "
+          const results = require('./load-test-results.json');
+          console.log('Load Test Results:');
+          console.log('==================');
+          console.log('Requests/sec:', results.requests.average);
+          console.log('Latency avg:', results.latency.average, 'ms');
+          console.log('Latency p99:', results.latency.p99, 'ms');
+          console.log('Errors:', results.errors);
+          console.log('Timeouts:', results.timeouts);
+          
+          // Fail if performance thresholds not met
+          if (results.requests.average < 1000) {
+            console.error('Performance threshold not met: < 1000 req/s');
+            process.exit(1);
+          }
+          if (results.latency.p99 > 100) {
+            console.error('Latency threshold not met: p99 > 100ms');
+            process.exit(1);
+          }
+          "
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: load-test-results.json
+          retention-days: 30

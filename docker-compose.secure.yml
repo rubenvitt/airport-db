@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  redis-secure:
+    image: redis:7-alpine
+    container_name: airport-db-redis-secure
+    ports:
+      - "127.0.0.1:9021:6379"  # Only bind to localhost
+    volumes:
+      - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./redis/users.acl:/data/users.acl:ro
+      - redis-logs:/logs
+      # Uncomment for TLS support
+      # - ./redis/tls:/tls:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    environment:
+      # Additional security environment variables
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,KEYS,CONFIG
+    networks:
+      - redis-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "$$REDIS_PASSWORD", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Redis Sentinel for high availability (optional)
+  redis-sentinel:
+    image: redis:7-alpine
+    container_name: airport-db-redis-sentinel
+    ports:
+      - "127.0.0.1:26379:26379"
+    volumes:
+      - ./redis/sentinel.conf:/etc/sentinel.conf:ro
+    command: redis-sentinel /etc/sentinel.conf
+    networks:
+      - redis-network
+    depends_on:
+      - redis-secure
+    profiles:
+      - production
+
+  # Redis Exporter for Prometheus metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: airport-db-redis-exporter
+    ports:
+      - "127.0.0.1:9122:9121"
+    environment:
+      - REDIS_ADDR=redis-secure:6379
+      - REDIS_USER=monitoring
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_monitoring_password
+    secrets:
+      - redis_monitoring_password
+    networks:
+      - redis-network
+    depends_on:
+      - redis-secure
+    profiles:
+      - monitoring
+
+networks:
+  redis-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis-data:
+    driver: local
+  redis-logs:
+    driver: local
+
+secrets:
+  redis_monitoring_password:
+    file: ./redis/secrets/monitoring_password.txt

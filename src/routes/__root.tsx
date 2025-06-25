@@ -55,15 +55,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       <RootDocument>
         <div className="min-h-screen flex flex-col">
           <Header />
-          <main className="flex-1 container py-16 max-w-4xl mx-auto">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-              <p className="text-xl text-muted-foreground mb-8">
-                The page you're looking for doesn't exist.
-              </p>
-              <a href="/" className="text-primary hover:underline">
-                Go back home
-              </a>
+          <main className="flex-1">
+            <div className="container mx-auto px-4 pt-8 lg:pt-12 pb-16 supports-[padding:env(safe-area-inset-top)]:pt-[max(env(safe-area-inset-top),theme(spacing.8))] supports-[padding:env(safe-area-inset-top)]:lg:pt-[max(env(safe-area-inset-top),theme(spacing.12))]">
+              <div className="text-center max-w-4xl mx-auto">
+                <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
+                <p className="text-xl text-muted-foreground mb-8">
+                  The page you're looking for doesn't exist.
+                </p>
+                <a href="/" className="text-primary hover:underline">
+                  Go back home
+                </a>
+              </div>
             </div>
           </main>
           <Footer />
@@ -94,7 +96,9 @@ function RootComponent() {
               <Header />
               
               <main className="flex-1">
-                <Outlet />
+                <div className="container mx-auto px-4 pt-8 lg:pt-12 supports-[padding:env(safe-area-inset-top)]:pt-[max(env(safe-area-inset-top),theme(spacing.8))] supports-[padding:env(safe-area-inset-top)]:lg:pt-[max(env(safe-area-inset-top),theme(spacing.12))]">
+                  <Outlet />
+                </div>
               </main>
               
               <Footer />

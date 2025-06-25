@@ -45,6 +45,10 @@ cp .env.example .env
 # Start Redis for caching (optional but recommended)
 docker-compose up -d redis
 
+# For production with security enabled:
+# ./scripts/setup-redis-security.sh
+# docker-compose -f docker-compose.secure.yml up -d
+
 # Start development server
 pnpm dev
 ```
@@ -136,6 +140,37 @@ This project integrates with the following APIs:
 - Alternative source for flight and airport data
 - Free tier: 1,000 requests/month
 - Documentation: https://aviationstack.com/documentation
+
+## Security
+
+### Redis Security Features
+
+The application includes comprehensive security measures for the Redis cache layer:
+
+- **Authentication**: ACL-based user authentication with role-based access control
+- **Encryption**: TLS/SSL support for data in transit
+- **Secrets Management**: Secure credential storage with multiple backend options
+- **Rate Limiting**: Protection against API abuse and DoS attacks
+- **Network Isolation**: Restricted network access and Docker security hardening
+
+### Setting Up Production Security
+
+1. Generate secure configuration:
+   ```bash
+   ./scripts/setup-redis-security.sh
+   ```
+
+2. Start Redis with security enabled:
+   ```bash
+   docker-compose -f docker-compose.secure.yml up -d
+   ```
+
+3. Configure TLS (optional):
+   ```bash
+   ./scripts/generate-redis-tls.sh
+   ```
+
+For detailed security documentation, see [docs/REDIS_SECURITY.md](docs/REDIS_SECURITY.md).
 
 ## Development
 

@@ -3,6 +3,7 @@
 import Redis from 'ioredis'
 import { StructuredLogger, jsonTransport, prettyTransport } from '../../lib/cache/observability'
 import { CircuitBreaker, CircuitState, ExponentialBackoff } from './circuitBreaker'
+import { secretsManager } from './secretsManager'
 
 // Load environment variables for server-side only
 if (typeof window === 'undefined') {
@@ -20,24 +21,65 @@ export interface RedisConfig {
   host?: string
   port?: number
   password?: string
+  username?: string
   maxRetriesPerRequest?: number
   enableReadyCheck?: boolean
   retryStrategy?: (times: number) => number | void
+  tls?: {
+    ca?: string | Buffer
+    cert?: string | Buffer
+    key?: string | Buffer
+    rejectUnauthorized?: boolean
+    servername?: string
+  }
 }
 
 let redisClient: Redis | null = null
 let circuitBreaker: CircuitBreaker | null = null
 
-export function getRedisConfig(): RedisConfig {
+export async function getRedisConfig(): Promise<RedisConfig> {
   const config: RedisConfig = {}
+
+  // Initialize secrets manager
+  await secretsManager.initialize()
+  const secrets = await secretsManager.getAllSecrets()
 
   if (process.env.REDIS_URL) {
     config.url = process.env.REDIS_URL
   } else {
     config.host = process.env.REDIS_HOST || 'localhost'
     config.port = parseInt(process.env.REDIS_PORT || '9021', 10)
-    if (process.env.REDIS_PASSWORD) {
-      config.password = process.env.REDIS_PASSWORD
+    
+    // Use secrets manager for credentials
+    if (secrets.redisPassword) {
+      config.password = secrets.redisPassword
+    }
+    if (secrets.redisUsername) {
+      config.username = secrets.redisUsername
+    }
+  }
+
+  // TLS Configuration
+  if (process.env.REDIS_TLS_ENABLED === 'true') {
+    config.tls = {
+      rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED !== 'false'
+    }
+
+    // Use secrets for TLS certificates
+    if (secrets.redisTlsCa) {
+      config.tls.ca = secrets.redisTlsCa
+    }
+
+    if (secrets.redisTlsCert) {
+      config.tls.cert = secrets.redisTlsCert
+    }
+
+    if (secrets.redisTlsKey) {
+      config.tls.key = secrets.redisTlsKey
+    }
+
+    if (process.env.REDIS_TLS_SERVERNAME) {
+      config.tls.servername = process.env.REDIS_TLS_SERVERNAME
     }
   }
 
@@ -89,7 +131,7 @@ export async function getRedisClient(): Promise<Redis | null> {
   try {
     // Use circuit breaker for connection attempt
     return await breaker.execute(async () => {
-      const config = getRedisConfig()
+      const config = await getRedisConfig()
       
       logger.info('Initializing Redis connection', { 
         host: config.host, 

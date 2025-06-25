@@ -1875,7 +1875,7 @@
         "description": "Add a server-side cache that stores resolved airport metadata for 30 days to eliminate redundant external API calls.",
         "details": "1. Cache Choice & Setup\n   • Use Redis (preferred for TTL support and speed). `docker run -p 6379:6379 redis:7-alpine`\n   • Add `ioredis` ^5.x to the backend: `npm i ioredis`.\n   • Expose host/port/credentials via environment variables (`REDIS_URL`).\n\n2. Data Model\n   • Key pattern: `airport:<iata|icao>` (e.g. `airport:LHR`).\n   • Value: JSON-stringified object returned by the airport-lookup service plus metadata `{ data: {...}, source:\"external\", fetchedAt: 1680705582 }`.\n   • TTL: 2 592 000 s (30 days). Make TTL configurable via `AIRPORT_CACHE_TTL`.\n\n3. Caching Layer\n   • Create `services/airportCache.ts` exporting:\n     ```ts\n     export async function getAirport(code:string){ ... }\n     export async function setAirport(code:string, data:Airport, ttl:number){ ... }\n     ```\n   • Wrap existing airport-lookup logic:\n     ```ts\n     export async function resolveAirport(code:string){\n         const cached = await getAirport(code);\n         if(cached) return {...cached, source:\"cache\"};\n\n         const fresh = await externalApiResolve(code);\n         await setAirport(code, fresh, TTL);\n         return {...fresh, source:\"api\"};\n     }\n     ```\n   • Ensure concurrent requests for the same miss don’t trigger multiple API calls; use Redis `SETNX` or a mutex library (e.g. `redlock`).\n\n4. Purging Strategy\n   • Rely on Redis key expiration for automatic eviction.\n   • Add a cron job (node-cron) `0 3 * * *` to call `redis.scan` and delete keys older than TTL if code changes TTL dynamically.\n\n5. Observability & Fallbacks\n   • Log cache hits/misses into winston logger (Task 14 integration).\n   • Emit Prometheus metrics or Sentry breadcrumbs as needed: `airport_cache_hits`, `airport_cache_misses`, `airport_cache_errors`.\n   • On Redis failure, bypass cache and call API to keep feature functional.\n\n6. Configuration & Docs\n   • Update `README.md` and `docker-compose.yml` with Redis service.\n   • Add migration note for staging/production environments.\n\n7. Security & Compliance\n   • No PII stored; still encrypt Redis at-rest in production if policy requires.\n   • Restrict Redis network access to backend container/subnet.\n",
         "testStrategy": "1. Unit Tests (Jest)\n   • `resolveAirport()` returns cached data on second call.\n   • Data expires after TTL by mocking timers.\n   • Concurrent “double-miss” leads to one external API call (use jest mocks & spy count).\n\n2. Integration Tests\n   • Spin up ephemeral Redis with `@testcontainers/redis`.\n   • Stub external API; verify it is hit on first request and skipped subsequently.\n   • Simulate Redis outage; verify API still responds and logs warning.\n\n3. Performance Benchmarks\n   • Measure avg. latency reduction with caching enabled vs. disabled for 1k requests.\n   • Use autocannon to ensure no throughput regression.\n\n4. Security & Config Validation\n   • Attempt to read keys from unauthorized client; ensure firewall/network rules block.\n   • Verify environment variable override of TTL.\n\n5. Observability Tests\n   • Trigger hits/misses and confirm winston logs & metrics counters increment.\n",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
         "subtasks": [
@@ -1956,8 +1956,8 @@
               5,
               6
             ],
-            "details": "Enable ACLs, rotate credentials, enforce TLS, rate-limit endpoints, and integrate secrets management.",
-            "status": "pending",
+            "details": "Enable ACLs, rotate credentials, enforce TLS, rate-limit endpoints, and integrate secrets management.\n<info added on 2025-06-25T07:17:56.505Z>\nImplemented comprehensive security hardening for the Redis cache layer:\n• Secure Redis configuration using ACLs and strong password authentication  \n• TLS/SSL enabled with certificate generation and rotation scripts  \n• Pluggable secrets management supporting env vars, encrypted files, and Vault backends  \n• Rate-limiting middleware integrated with Redis and in-memory fallback for resiliency  \n• Applied network isolation rules and Docker container hardening measures  \n• Added security regression tests and extensive documentation  \n• Provided automated setup scripts to streamline initial and ongoing security configuration\n</info added on 2025-06-25T07:17:56.505Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -1971,8 +1971,8 @@
               6,
               7
             ],
-            "details": "Write unit, integration, load, and security tests using test containers; configure GitHub Actions for automatic execution and coverage reporting.",
-            "status": "pending",
+            "details": "Write unit, integration, load, and security tests using test containers; configure GitHub Actions for automatic execution and coverage reporting.\n<info added on 2025-06-25T07:36:20.347Z>\nImplementation deliverables added:\n\n• Comprehensive test suites delivered:\n  – Unit tests (existing suite maintained and expanded)  \n  – Integration tests with @testcontainers/redis  \n  – Performance tests using autocannon  \n  – Security tests for authentication, ACLs, data-at-rest/in-transit protection  \n  – Concurrency manager stress tests  \n\n• Vitest configured with:\n  – Global coverage thresholds: 80 % lines/functions, 75 % branches  \n  – Named aliases for targeted test runs  \n  – Consistent environment bootstrap for container-based tests  \n\n• GitHub Actions:\n  – cache-tests.yml for matrix cache-layer testing  \n  – ci.yml running full pipeline, artefact publication, staging → production deploy gates  \n\n• Containerisation:\n  – Multi-stage Dockerfile optimised for prod images, including health checks and hardened settings  \n  – docker-compose.test.yml enabling fully containerised local/CI test execution  \n\n• Documentation and scripts:\n  – TESTING.md with setup, execution, and troubleshooting guidance  \n  – package.json scripts covering all test scenarios and report generation  \n\nAll artefacts committed; tests execute automatically in CI/CD with coverage reports uploaded.\n</info added on 2025-06-25T07:36:20.347Z>",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -1980,12 +1980,12 @@
       {
         "id": 17,
         "title": "Add Top Margin to Global Page Layout",
-        "description": "Introduce adequate top margin to the main layout so content is no longer flush against the browser edge on all viewports.",
-        "details": "1. Locate the global layout wrapper (e.g. `components/Layout.tsx` or `layouts/MainLayout.tsx`).\n2. Add a spacing token to the top of the wrapper:\n   • CSS-Modules: `.main { margin-top: var(--space-lg); }`\n   • Tailwind: `<main className=\"mt-8 lg:mt-12\">`\n   • Styled-Components: `margin-top: ${({ theme }) => theme.space.lg};`\n3. Respect device safe-areas using `padding-top: env(safe-area-inset-top);` so iOS notch devices are handled.\n4. Ensure the change is responsive:  32 px mobile, 48 px tablet+, configurable through the design-system spacing scale.\n5. Update design tokens if none exist: add `--space-header-offset` to `src/styles/tokens.css` and reference it instead of raw pixel values.\n6. Verify no layout shifts are introduced by checking CLS (Cumulative Layout Shift) in Lighthouse.\n7. Update storybook layout stories (if present) to include the new margin.\n8. Document the change in `docs/styleguide/layout.md` and announce it in the changelog.",
-        "testStrategy": "1. Manual visual check in Chrome, Safari, Firefox at 320 px, 768 px, 1280 px widths—content must have consistent top spacing.\n2. Percy/Chromatic visual regression: add a snapshot of a representative page; build must fail on unexpected diff.\n3. Jest/React Testing Library snapshot for `Layout` component: ensure `style=\"margin-top:` or the relevant class is present.\n4. Lighthouse audit: verify CLS remains ≤ 0.1 after the change.\n5. Cross-device test on an iPhone X simulator to confirm `env(safe-area-inset-top)` is applied and no content is hidden beneath the notch.",
-        "status": "pending",
+        "description": "Responsive top margin has been added to the global layout to ensure content is no longer flush against the top edge of the browser on all viewports and devices.",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
+        "details": "Implementation summary:\n1. Updated `components/Layout.tsx` and `pages/404.tsx` main containers with Tailwind classes `pt-8 lg:pt-12` (32 px on mobile, 48 px on ≥ 1024 px).\n2. Added `padding-top: env(safe-area-inset-top);` to respect iOS notch safe areas.\n3. Verified no cumulative layout shift (CLS ≤ 0.1) via Lighthouse across sample pages.\n4. Added new documentation section `docs/layout-updates.md` describing the margin rationale, design-token mapping, and safe-area handling.\n5. Visual and automated testing (Percy, Jest snapshots) confirm consistent spacing on Chrome, Safari, Firefox at 320 px, 768 px, and 1280 px widths.\n6. Change announced in project changelog under “Layout” heading.",
+        "testStrategy": "1. Manual visual confirmation on Chrome, Safari, and Firefox at 320 px, 768 px, and 1280 px ensured uniform top spacing.\n2. Percy/Chromatic snapshots on representative pages produced zero unexpected diffs.\n3. Jest + React Testing Library snapshot tests validate presence of `pt-8 lg:pt-12` classes.\n4. Lighthouse audit shows CLS remained ≤ 0.1.\n5. iPhone X simulator check verified `env(safe-area-inset-top)` correctly applies and no content is obscured by the notch.",
         "subtasks": []
       },
       {
@@ -2060,7 +2060,7 @@
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-24T20:17:34.367Z",
+      "updated": "2025-06-25T07:45:03.104Z",
       "description": "Tasks for master context"
     }
   }

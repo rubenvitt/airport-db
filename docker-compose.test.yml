@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: airport-db-redis-test
+    command: >
+      redis-server
+      --requirepass testpassword123
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --appendonly yes
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-test-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "testpassword123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: airport-db-app-test
+    command: pnpm test:ci
+    environment:
+      NODE_ENV: test
+      REDIS_URL: redis://:testpassword123@redis:6379
+      REDIS_PASSWORD: testpassword123
+      AIRPORT_CACHE_TTL: 3600
+      ENABLE_CACHE_METRICS: "true"
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./coverage:/app/coverage
+      - ./test-results:/app/test-results
+    networks:
+      - test-network
+
+  performance-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: airport-db-perf-test
+    command: pnpm test:performance
+    environment:
+      NODE_ENV: test
+      REDIS_URL: redis://:testpassword123@redis:6379
+      REDIS_PASSWORD: testpassword123
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    profiles:
+      - performance
+
+  security-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: airport-db-security-test
+    command: pnpm test:security
+    environment:
+      NODE_ENV: test
+      REDIS_URL: redis://:testpassword123@redis:6379
+      REDIS_PASSWORD: testpassword123
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    profiles:
+      - security
+
+  trivy:
+    image: aquasec/trivy:latest
+    container_name: airport-db-trivy
+    command: fs --severity HIGH,CRITICAL /app
+    volumes:
+      - .:/app:ro
+    networks:
+      - test-network
+    profiles:
+      - security
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  redis-test-data:
