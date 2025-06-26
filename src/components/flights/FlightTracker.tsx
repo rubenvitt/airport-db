@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Play, Pause, RefreshCw, Settings, Filter, Eye, EyeOff } from 'lucide-react'
+import { Play, Pause, RefreshCw, Settings, Filter, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import type { FlightState } from '@/types/flight'
 import { FlightMapView } from './FlightMapView'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useFlightData } from '@/hooks/useFlightData'
 import { useFlightWebSocketContext } from '@/contexts/FlightWebSocketContext'
+import { useAllFlightStates } from '@/hooks/api'
 import type { FlightBounds } from '@/stores/FlightDataStore'
 
 interface FlightTrackerProps {
@@ -27,17 +28,36 @@ export function FlightTracker({
   // State
   const [selectedFlight, setSelectedFlight] = useState<FlightState | null>(null)
   const [isLive, setIsLive] = useState(true)
-  const [maxFlights, setMaxFlights] = useState(1000)
+  const [maxFlights, setMaxFlights] = useState(500)
   const [showOnGround, setShowOnGround] = useState(true)
   const [showInFlight, setShowInFlight] = useState(true)
   const [selectedCountries, setSelectedCountries] = useState<string[]>([])
   const [currentBounds, setCurrentBounds] = useState<FlightBounds | null>(null)
   const [currentZoom, setCurrentZoom] = useState(initialZoom)
   const [autoCenter, setAutoCenter] = useState(false)
+  const [displayedFlightsCount, setDisplayedFlightsCount] = useState(0)
 
   // Hooks
   const flightData = useFlightData({ autoSubscribeToUpdates: isLive })
   const webSocket = useFlightWebSocketContext()
+
+  // Load initial flight data via HTTP if WebSocket is not connected
+  const { data: httpFlightData, isLoading: isLoadingHttp, refetch } = useAllFlightStates({
+    enabled: !webSocket.isConnected && flightData.flightCount === 0,
+    refetchInterval: isLive && !webSocket.isConnected ? 30000 : false, // 30s polling if WebSocket fails
+  })
+
+  // Track if we've already loaded initial data
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false)
+
+  // Update flight data from HTTP response
+  useEffect(() => {
+    if (httpFlightData?.states && httpFlightData.states.length > 0 && !hasLoadedInitialData) {
+      const updates = flightData.bulkUpdate(httpFlightData.states)
+      console.log(`Loaded ${updates.length} flights via HTTP`)
+      setHasLoadedInitialData(true)
+    }
+  }, [httpFlightData]) // Remove dependencies that can cause loops
 
   // Get filtered flights for display
   const filteredFlights = flightData.queryFlights({
@@ -45,6 +65,9 @@ export function FlightTracker({
     onGround: showOnGround && showInFlight ? undefined : (showOnGround ? true : false),
     countries: selectedCountries.length > 0 ? selectedCountries : undefined,
   })
+  
+  // Debug log
+  console.log('FlightTracker - Total flights:', flightData.flightCount, 'Filtered:', filteredFlights.length, 'Bounds:', currentBounds)
 
   // Get unique countries from all flights for filter dropdown
   const availableCountries = Array.from(
@@ -61,7 +84,12 @@ export function FlightTracker({
     if (isLive && webSocket.isConnected && currentBounds) {
       webSocket.subscribeToArea(currentBounds)
     }
-  }, [isLive, webSocket, currentBounds])
+    
+    // Reset initial data flag when WebSocket connects
+    if (webSocket.isConnected && hasLoadedInitialData) {
+      setHasLoadedInitialData(false)
+    }
+  }, [isLive, webSocket, currentBounds, hasLoadedInitialData])
 
   // Handle flight selection
   const handleFlightSelect = useCallback((flight: FlightState) => {
@@ -74,6 +102,7 @@ export function FlightTracker({
 
   // Handle map movement
   const handleMapMove = useCallback((bounds: FlightBounds, zoom: number) => {
+    console.log('Map moved, new bounds:', bounds, 'zoom:', zoom)
     setCurrentBounds(bounds)
     setCurrentZoom(zoom)
   }, [])
@@ -108,6 +137,8 @@ export function FlightTracker({
               selectedFlight={selectedFlight}
               maxFlightsDisplayed={maxFlights}
               onMapMove={handleMapMove}
+              flights={filteredFlights}
+              onDisplayedFlightsChange={setDisplayedFlightsCount}
             />
           </CardContent>
         </Card>
@@ -143,6 +174,17 @@ export function FlightTracker({
                 >
                   {isLive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
+                {!webSocket.isConnected && (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-8 w-8"
+                    onClick={() => refetch()}
+                    disabled={isLoadingHttp}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isLoadingHttp ? 'animate-spin' : ''}`} />
+                  </Button>
+                )}
               </div>
             </div>
             
@@ -150,7 +192,18 @@ export function FlightTracker({
               <div>Status: {webSocket.isConnected ? 'Connected' : webSocket.isConnecting ? 'Connecting...' : 'Disconnected'}</div>
               <div>Update Rate: {flightData.updateRate.toFixed(1)}/sec</div>
               <div>Total Flights: {flightData.flightCount.toLocaleString()}</div>
-              <div>Displayed: {filteredFlights.length.toLocaleString()}</div>
+              <div>Displayed: {displayedFlightsCount.toLocaleString()}</div>
+              {!webSocket.isConnected && flightData.flightCount === 0 && !isLoadingHttp && (
+                <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-500">
+                  <AlertCircle className="h-3 w-3" />
+                  <span>Using HTTP fallback</span>
+                </div>
+              )}
+              {isLoadingHttp && (
+                <div className="text-blue-600 dark:text-blue-400">
+                  Loading flights...
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -215,8 +268,8 @@ export function FlightTracker({
             <div className="space-y-2">
               <Label className="text-xs">Countries</Label>
               <Select
-                value={selectedCountries.length === 1 ? selectedCountries[0] : ""}
-                onValueChange={(value) => setSelectedCountries(value ? [value] : [])}
+                value={selectedCountries.length === 1 ? selectedCountries[0] : "all"}
+                onValueChange={(value) => setSelectedCountries(value === "all" ? [] : [value])}
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder={
@@ -226,7 +279,7 @@ export function FlightTracker({
                   } />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   {availableCountries.slice(0, 20).map(country => (
                     <SelectItem key={country} value={country}>
                       {country}

@@ -1,4 +1,4 @@
-import type { FlightState } from '@/types/flight'
+import type { FlightState, FlightTrack } from '@/types/flight'
 
 export interface FlightBounds {
   lamin: number
@@ -146,10 +146,14 @@ export class GridSpatialIndex implements SpatialIndex {
  */
 export class FlightDataStore {
   private flights = new Map<string, FlightState>()
+  private flightTracks = new Map<string, FlightTrack>()
+  private trackLastUpdate = new Map<string, number>()
   private lastUpdate = new Map<string, number>()
   private spatialIndex: SpatialIndex
   private staleThreshold: number
+  private trackStaleThreshold: number
   private maxFlights: number
+  private maxTracks: number
   private queryCount = 0
   private updateCount = 0
   private lastCleanup = Date.now()
@@ -158,9 +162,13 @@ export class FlightDataStore {
     staleThreshold?: number
     maxFlights?: number
     spatialGridSize?: number
+    trackStaleThreshold?: number
+    maxTracks?: number
   } = {}) {
     this.staleThreshold = options.staleThreshold || 300000 // 5 minutes
+    this.trackStaleThreshold = options.trackStaleThreshold || 3600000 // 1 hour
     this.maxFlights = options.maxFlights || 50000
+    this.maxTracks = options.maxTracks || 100
     this.spatialIndex = new GridSpatialIndex(this.flights, options.spatialGridSize)
   }
 
@@ -307,10 +315,56 @@ export class FlightDataStore {
   }
 
   /**
+   * Set or update a flight track
+   */
+  setFlightTrack(icao24: string, track: FlightTrack): void {
+    this.flightTracks.set(icao24, track)
+    this.trackLastUpdate.set(icao24, Date.now())
+    
+    // Clean up old tracks if we're over the limit
+    if (this.flightTracks.size > this.maxTracks) {
+      this.cleanupOldTracks()
+    }
+  }
+
+  /**
+   * Get a flight track by ICAO24
+   */
+  getFlightTrack(icao24: string): FlightTrack | null {
+    return this.flightTracks.get(icao24) || null
+  }
+
+  /**
+   * Check if a track exists for a flight
+   */
+  hasFlightTrack(icao24: string): boolean {
+    return this.flightTracks.has(icao24)
+  }
+
+  /**
+   * Remove a flight track
+   */
+  removeFlightTrack(icao24: string): boolean {
+    const existed = this.flightTracks.has(icao24)
+    this.flightTracks.delete(icao24)
+    this.trackLastUpdate.delete(icao24)
+    return existed
+  }
+
+  /**
+   * Get all tracks (for debugging/testing)
+   */
+  getAllTracks(): Map<string, FlightTrack> {
+    return new Map(this.flightTracks)
+  }
+
+  /**
    * Clear all flight data
    */
   clear(): void {
     this.flights.clear()
+    this.flightTracks.clear()
+    this.trackLastUpdate.clear()
     this.lastUpdate.clear()
     this.spatialIndex.clear()
     this.updateCount = 0
@@ -391,7 +445,40 @@ export class FlightDataStore {
   private estimateMemoryUsage(): number {
     // Rough estimate in bytes
     const flightSize = 400 // Estimated bytes per flight object
+    const trackSize = 2000 // Estimated bytes per track (with path points)
     const indexOverhead = this.flights.size * 50 // Estimated spatial index overhead
-    return this.flights.size * flightSize + indexOverhead
+    return this.flights.size * flightSize + this.flightTracks.size * trackSize + indexOverhead
+  }
+
+  private cleanupOldTracks(): void {
+    const now = Date.now()
+    const toRemove: string[] = []
+
+    // Remove stale tracks
+    for (const [icao24, lastSeen] of this.trackLastUpdate) {
+      if (now - lastSeen > this.trackStaleThreshold) {
+        toRemove.push(icao24)
+      }
+    }
+
+    // Remove oldest tracks if over limit
+    if (this.flightTracks.size > this.maxTracks) {
+      const sortedByAge = Array.from(this.trackLastUpdate.entries())
+        .sort((a, b) => a[1] - b[1])
+        .slice(0, this.flightTracks.size - this.maxTracks)
+      
+      for (const [icao24] of sortedByAge) {
+        toRemove.push(icao24)
+      }
+    }
+
+    // Perform removals
+    for (const icao24 of toRemove) {
+      this.removeFlightTrack(icao24)
+    }
+
+    if (toRemove.length > 0) {
+      console.log(`Cleaned up ${toRemove.length} old flight tracks`)
+    }
   }
 }

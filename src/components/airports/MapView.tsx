@@ -277,8 +277,12 @@ function MapClient({
                       {airport.city}, {airport.region}, {airport.country}
                     </p>
                     <div className="flex gap-2 text-xs mb-2">
-                      <Badge variant="outline" className="px-1.5 py-0">{airport.iata}</Badge>
-                      <Badge variant="outline" className="px-1.5 py-0">{airport.icao}</Badge>
+                      {airport.iata && (
+                        <Badge variant="outline" className="px-1.5 py-0">{airport.iata}</Badge>
+                      )}
+                      {airport.icao && (
+                        <Badge variant="outline" className="px-1.5 py-0">{airport.icao}</Badge>
+                      )}
                     </div>
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">

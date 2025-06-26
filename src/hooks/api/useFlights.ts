@@ -203,7 +203,7 @@ export function useAirportFlights(
             )
             
             // Return all flights in the area since we can't filter by actual airport
-            return response.flights
+            return response.flights.states || []
           }
         } catch (error) {
           console.error('Failed to get airport data:', error)
@@ -214,7 +214,8 @@ export function useAirportFlights(
       const response = await flightsFetchApi.getAllStates()
       
       // Try to filter by airport code in callsign (not perfect but better than nothing)
-      return response.flights.states.filter(flight => 
+      const states = response.flights.states || []
+      return states.filter(flight => 
         flight.callsign?.toUpperCase().includes(airport.toUpperCase()) || false
       )
     },

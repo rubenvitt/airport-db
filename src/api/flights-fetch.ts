@@ -86,7 +86,8 @@ export const flightsFetchApi = {
     begin: number,
     end: number,
   ): Promise<{ arrivals: DepartureArrival[]; source: 'cache' | 'api' }> {
-    const url = new URL(`${API_BASE}/arrivals/${airport}`, window.location.origin)
+    const url = new URL(`${API_BASE}/arrivals`, window.location.origin)
+    url.searchParams.append('airport', airport)
     url.searchParams.append('begin', String(begin))
     url.searchParams.append('end', String(end))
     
@@ -107,7 +108,8 @@ export const flightsFetchApi = {
     begin: number,
     end: number,
   ): Promise<{ departures: DepartureArrival[]; source: 'cache' | 'api' }> {
-    const url = new URL(`${API_BASE}/departures/${airport}`, window.location.origin)
+    const url = new URL(`${API_BASE}/departures`, window.location.origin)
+    url.searchParams.append('airport', airport)
     url.searchParams.append('begin', String(begin))
     url.searchParams.append('end', String(end))
     

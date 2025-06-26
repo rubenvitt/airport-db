@@ -339,9 +339,16 @@ function LocationListComponent({
                           {airport.city}, {airport.country}
                         </p>
                       </div>
-                      <Badge variant="default" className="font-mono text-[10px] px-1.5 py-0.5">
-                        {airport.iata}
-                      </Badge>
+                      {airport.iata && (
+                        <Badge variant="default" className="font-mono text-[10px] px-1.5 py-0.5">
+                          {airport.iata}
+                        </Badge>
+                      )}
+                      {!airport.iata && airport.icao && (
+                        <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.5">
+                          {airport.icao}
+                        </Badge>
+                      )}
                     </div>
                     
                     {/* Airport info */}

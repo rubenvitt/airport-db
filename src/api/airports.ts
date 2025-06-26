@@ -1,65 +1,25 @@
-// Airport API client with caching support
+// Airport API client that calls our Next.js backend API
 
-import { cachedFetch } from './cachedFetch'
-import { API_CONFIG, hasApiKey } from './config'
 import type { Airport, AirportSearchParams } from '@/types/airport'
-import { RateLimiter } from '@/utils/security'
-
-// Client-side rate limiter for API Ninjas
-// Free tier: 10,000 requests/month = ~333/day = ~14/hour
-// We'll limit to 10 requests per minute to be conservative
-const rateLimiter = new RateLimiter(10, 60000)
 
 export const airportsApi = {
   /**
-   * Search airports using API Ninjas
-   * NOTE: Free tier only supports IATA and ICAO code searches
+   * Search airports using our backend API
    * @param params Search parameters
    * @returns Array of airports matching the search criteria
    */
   async searchAirports(params: AirportSearchParams): Promise<Array<Airport>> {
-    if (!hasApiKey.apiNinjas()) {
-      throw new Error('API Ninjas API key is not configured')
+    // For now, we only support searching by IATA or ICAO code via our backend
+    if (params.iata) {
+      return this.getAirportByIATA(params.iata).then(airport => airport ? [airport] : [])
     }
-
-    // Check rate limit before making the request
-    if (!rateLimiter.canMakeRequest()) {
-      const resetTime = rateLimiter.getResetTime()
-      const waitTime = Math.max(0, resetTime - Date.now())
-      throw new Error(
-        `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds. Remaining requests: ${rateLimiter.getRemainingRequests()}`
-      )
-    }
-
-    // Free tier only supports IATA and ICAO parameters
-    const freeParams: Record<string, string | undefined> = {}
-    if (params.iata) freeParams.iata = params.iata
-    if (params.icao) freeParams.icao = params.icao
-    
-    // Log if premium parameters were requested
-    const premiumParams = ['name', 'city', 'country', 'region', 'min_elevation_ft', 'max_elevation_ft']
-    const requestedPremium = premiumParams.filter(param => params[param as keyof AirportSearchParams])
-    if (requestedPremium.length > 0) {
-      console.warn(`Premium parameters requested but not available in free tier: ${requestedPremium.join(', ')}`)
-      console.warn('Free tier only supports IATA and ICAO code searches')
+    if (params.icao) {
+      return this.getAirportByICAO(params.icao).then(airport => airport ? [airport] : [])
     }
     
-    const airports = await cachedFetch<Array<Airport>>(
-      `${API_CONFIG.apiNinjas.baseUrl}${API_CONFIG.apiNinjas.endpoints.airports}`,
-      {
-        headers: {
-          'X-Api-Key': API_CONFIG.apiNinjas.key,
-        },
-        params: freeParams,
-        cache: {
-          ttl: 7 * 24 * 60 * 60 * 1000, // 7 days for airport data
-          persist: true,
-          priority: 'high',
-        },
-      },
-    )
-
-    return airports
+    // Other search parameters are not supported yet
+    console.warn('Only IATA and ICAO searches are currently supported')
+    return []
   },
 
   /**
@@ -68,8 +28,22 @@ export const airportsApi = {
    * @returns Airport details or null if not found
    */
   async getAirportByIATA(iataCode: string): Promise<Airport | null> {
-    const airports = await this.searchAirports({ iata: iataCode })
-    return airports[0] || null
+    try {
+      const response = await fetch(`/api/airports/${iataCode}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null
+        }
+        throw new Error(`Failed to fetch airport: ${response.statusText}`)
+      }
+      
+      const airport = await response.json()
+      return airport
+    } catch (error) {
+      console.error('Error fetching airport by IATA:', error)
+      throw error
+    }
   },
 
   /**
@@ -78,24 +52,38 @@ export const airportsApi = {
    * @returns Airport details or null if not found
    */
   async getAirportByICAO(icaoCode: string): Promise<Airport | null> {
-    const airports = await this.searchAirports({ icao: icaoCode })
-    return airports[0] || null
+    try {
+      const response = await fetch(`/api/airports/${icaoCode}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null
+        }
+        throw new Error(`Failed to fetch airport: ${response.statusText}`)
+      }
+      
+      const airport = await response.json()
+      return airport
+    } catch (error) {
+      console.error('Error fetching airport by ICAO:', error)
+      throw error
+    }
   },
 
   /**
    * Search airports by name
-   * NOTE: This is a premium feature - will return empty array for free tier
+   * NOTE: Not implemented yet - requires backend support
    * @param name Airport name (partial match supported)
    * @returns Array of airports
    */
   async searchByName(name: string): Promise<Array<Airport>> {
-    console.warn('searchByName requires API Ninjas premium tier')
+    console.warn('searchByName is not implemented yet')
     return []
   },
 
   /**
    * Get airports by city
-   * NOTE: This is a premium feature - will return empty array for free tier
+   * NOTE: Not implemented yet - requires backend support
    * @param city City name
    * @param country Optional country filter
    * @returns Array of airports in the city
@@ -104,20 +92,20 @@ export const airportsApi = {
     city: string,
     country?: string,
   ): Promise<Array<Airport>> {
-    console.warn('getAirportsByCity requires API Ninjas premium tier')
+    console.warn('getAirportsByCity is not implemented yet')
     return []
   },
 
   /**
    * Get airports by country
-   * NOTE: This is a premium feature - will return empty array for free tier
+   * NOTE: Not implemented yet - requires backend support
    * @param country Country name
    * @returns Array of airports in the country
    */
   async getAirportsByCountry(
     country: string
   ): Promise<Array<Airport>> {
-    console.warn('getAirportsByCountry requires API Ninjas premium tier')
+    console.warn('getAirportsByCountry is not implemented yet')
     return []
   },
 }

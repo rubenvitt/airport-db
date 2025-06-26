@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Badge } from '../../../src/components/ui/badge'
 import { MapPin, Globe, Clock, Navigation, Plane } from 'lucide-react'
 import Link from 'next/link'
+import { AirportFlights } from '../../../src/components/flights'
 
 export default function AirportDetailPage() {
   const params = useParams()
@@ -68,8 +69,12 @@ export default function AirportDetailPage() {
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Badge className="text-lg px-3 py-1">{airport.iata}</Badge>
-              <Badge variant="secondary" className="text-lg px-3 py-1">{airport.icao}</Badge>
+              {airport.iata && (
+                <Badge className="text-lg px-3 py-1">{airport.iata}</Badge>
+              )}
+              {airport.icao && (
+                <Badge variant="secondary" className="text-lg px-3 py-1">{airport.icao}</Badge>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -141,7 +146,21 @@ export default function AirportDetailPage() {
         </CardContent>
       </Card>
 
-      {/* You can add more sections here like weather, runways, etc. */}
+      {/* Arrivals and Departures */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plane className="h-5 w-5" />
+            Flight Activity
+          </CardTitle>
+          <CardDescription>
+            Recent arrivals and departures for {airport.name}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AirportFlights airportCode={airport.icao} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

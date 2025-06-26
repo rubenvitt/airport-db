@@ -113,35 +113,58 @@ async function withCache<T>(
   return result
 }
 
+// Convert radius in degrees to bounding box
+function getBoundingBox(lat: number, lon: number, radiusDegrees: number) {
+  return {
+    lamin: lat - radiusDegrees,
+    lamax: lat + radiusDegrees,
+    lomin: lon - radiusDegrees,
+    lomax: lon + radiusDegrees,
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const lamin = searchParams.get('lamin')
-    const lomin = searchParams.get('lomin')
-    const lamax = searchParams.get('lamax')
-    const lomax = searchParams.get('lomax')
+    const lat = searchParams.get('lat')
+    const lon = searchParams.get('lon')
+    const radius = searchParams.get('radius') || '1.5' // Default to ~165km
     
-    const params = {
-      ...(lamin && { lamin: Number(lamin) }),
-      ...(lomin && { lomin: Number(lomin) }),
-      ...(lamax && { lamax: Number(lamax) }),
-      ...(lomax && { lomax: Number(lomax) }),
+    if (!lat || !lon) {
+      return NextResponse.json(
+        { error: 'Latitude and longitude are required' },
+        { status: 400 }
+      )
     }
-
-    const cacheKey = `flights:states:${JSON.stringify(params)}`
+    
+    const latitude = Number(lat)
+    const longitude = Number(lon)
+    const radiusDegrees = Number(radius)
+    
+    if (isNaN(latitude) || isNaN(longitude) || isNaN(radiusDegrees)) {
+      return NextResponse.json(
+        { error: 'Invalid latitude, longitude, or radius' },
+        { status: 400 }
+      )
+    }
+    
+    // Convert radius to bounding box
+    const bbox = getBoundingBox(latitude, longitude, radiusDegrees)
+    
+    const cacheKey = `flights:near:${latitude}:${longitude}:${radiusDegrees}`
     
     const result = await withCache(
       cacheKey,
       CACHE_TTL,
       async () => {
-        const rawData = await fetchFromOpenSky<any>('/states/all', Object.keys(params).length > 0 ? params : undefined)
+        const rawData = await fetchFromOpenSky<any>('/states/all', bbox)
         return parseOpenSkyResponse(rawData)
       }
     )
 
     return NextResponse.json({ flights: result.data, source: result.source })
   } catch (error) {
-    console.error('Error in flights states API:', error)
+    console.error('Error in flights near API:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

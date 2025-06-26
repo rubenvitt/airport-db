@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { FlightState } from '@/types/flight'
+import type { FlightState, FlightTrack } from '@/types/flight'
 import { FlightDataStore, type FlightBounds, type FlightQueryOptions, type FlightStorageMetrics, type FlightUpdate } from '@/stores/FlightDataStore'
 import { useFlightWebSocketContext } from '@/contexts/FlightWebSocketContext'
 import { flightsServerApi } from '@/api/flights-server'
@@ -18,11 +18,20 @@ export interface UseFlightDataReturn {
   getFlightsNearPoint: (lat: number, lon: number, radiusKm: number) => FlightState[]
   getAllFlights: () => FlightState[]
   
+  // Track queries
+  getFlightTrack: (icao24: string) => FlightTrack | null
+  hasFlightTrack: (icao24: string) => boolean
+  getAllTracks: () => Map<string, FlightTrack>
+  
   // Store management
   updateFlight: (flight: FlightState) => FlightUpdate
   bulkUpdate: (flights: FlightState[]) => FlightUpdate[]
   removeFlight: (icao24: string) => boolean
   clear: () => void
+  
+  // Track management
+  setFlightTrack: (icao24: string, track: FlightTrack) => void
+  removeFlightTrack: (icao24: string) => boolean
   
   // Metrics and state
   metrics: FlightStorageMetrics
@@ -144,6 +153,33 @@ export function useFlightData(options: UseFlightDataOptions = {}): UseFlightData
     return storeRef.current.getAllFlights()
   }, [])
 
+  // Track query methods
+  const getFlightTrack = useCallback((icao24: string) => {
+    return storeRef.current.getFlightTrack(icao24)
+  }, [])
+
+  const hasFlightTrack = useCallback((icao24: string) => {
+    return storeRef.current.hasFlightTrack(icao24)
+  }, [])
+
+  const getAllTracks = useCallback(() => {
+    return storeRef.current.getAllTracks()
+  }, [])
+
+  // Track management methods
+  const setFlightTrack = useCallback((icao24: string, track: FlightTrack) => {
+    storeRef.current.setFlightTrack(icao24, track)
+    setLastUpdate(Date.now())
+  }, [])
+
+  const removeFlightTrack = useCallback((icao24: string) => {
+    const result = storeRef.current.removeFlightTrack(icao24)
+    if (result) {
+      setLastUpdate(Date.now())
+    }
+    return result
+  }, [])
+
   const updateFlight = useCallback((flight: FlightState) => {
     const update = storeRef.current.updateFlight(flight)
     setLastUpdate(Date.now())
@@ -207,11 +243,20 @@ export function useFlightData(options: UseFlightDataOptions = {}): UseFlightData
     getFlightsNearPoint,
     getAllFlights,
     
+    // Track queries
+    getFlightTrack,
+    hasFlightTrack,
+    getAllTracks,
+    
     // Store management
     updateFlight,
     bulkUpdate,
     removeFlight,
     clear,
+    
+    // Track management
+    setFlightTrack,
+    removeFlightTrack,
     
     // Metrics and state
     metrics,

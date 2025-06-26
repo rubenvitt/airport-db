@@ -1,13 +1,18 @@
 'use client'
 
-import { Heart, MapPin, Plane, X } from 'lucide-react'
+import { Heart, MapPin, Plane, X, Clock, Star } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { useFavoriteAirports } from '../../src/hooks/useFavoriteAirports'
 import { useAirportByICAO } from '../../src/hooks/api'
+import { useFavorites, useSearchHistory } from '../../src/contexts/AppContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../src/components/ui/card'
 import { Button } from '../../src/components/ui/button'
 import { Badge } from '../../src/components/ui/badge'
 import { LoadingSpinner } from '../../src/components/common'
+import { LocationList } from '../../src/components/airports'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/ui/tabs'
+import type { Airport } from '../../src/types'
 
 interface FavoriteAirportCardProps {
   icaoCode: string
@@ -77,7 +82,53 @@ function FavoriteAirportCard({ icaoCode, onRemove }: FavoriteAirportCardProps) {
 }
 
 export default function FavoritesPage() {
-  const { favoriteAirports, toggleFavorite, isLoading } = useFavoriteAirports()
+  const { favoriteAirports: favoriteIcaoCodes, toggleFavorite, isLoading } = useFavoriteAirports()
+  const { favoriteAirports } = useFavorites()
+  const { recentAirports } = useSearchHistory()
+  const [favoriteAirportData, setFavoriteAirportData] = useState<Array<Airport>>([])
+  const [isDataLoading, setIsDataLoading] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
+  
+  // Prevent hydration mismatch by waiting for client-side mount
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
+  // Fetch full airport data for favorites
+  useEffect(() => {
+    const fetchFavoriteAirports = async () => {
+      setIsDataLoading(true)
+      const airportPromises = favoriteIcaoCodes.map(async (icao) => {
+        try {
+          const response = await fetch(`/api/airports/${icao}`)
+          if (response.ok) {
+            return await response.json()
+          }
+        } catch (error) {
+          console.error(`Failed to fetch airport ${icao}:`, error)
+        }
+        return null
+      })
+      
+      const results = await Promise.all(airportPromises)
+      const validAirports = results.filter(Boolean) as Array<Airport>
+      
+      // Merge with recent airports to have full data
+      const allAirports = [...validAirports, ...recentAirports]
+      const uniqueAirports = Array.from(
+        new Map(allAirports.map(a => [a.icao, a])).values()
+      )
+      
+      setFavoriteAirportData(uniqueAirports)
+      setIsDataLoading(false)
+    }
+    
+    if (favoriteIcaoCodes.length > 0 || recentAirports.length > 0) {
+      fetchFavoriteAirports()
+    } else {
+      setIsDataLoading(false)
+    }
+  }, [favoriteIcaoCodes, recentAirports])
 
   return (
     <div className="container py-8 max-w-6xl mx-auto">
@@ -85,71 +136,63 @@ export default function FavoritesPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Heart className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">My Favorite Airports</h1>
+          <h1 className="text-3xl font-bold">My Airports</h1>
         </div>
         <p className="text-muted-foreground">
-          Save your frequently accessed airports for quick access. 
-          Track flights and view information for your favorite locations.
+          Manage your favorite airports and quickly access recently viewed airports. 
+          Your favorites are saved and will be available when you return.
         </p>
       </div>
-
-      {/* Favorites Grid */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner text="Loading favorites..." />
-        </div>
-      ) : favoriteAirports.length === 0 ? (
-        <Card className="text-center py-12">
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Star className="h-4 w-4 text-yellow-500" />
+              Favorite Airports
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No favorites yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Start adding airports to your favorites to see them here.
-            </p>
-            <Link href="/airports">
-              <Button>
-                <MapPin className="h-4 w-4 mr-2" />
-                Explore Airports
-              </Button>
-            </Link>
+            <div className="text-2xl font-bold">{isMounted ? favoriteIcaoCodes.length : 0}</div>
+            <CardDescription className="mt-1">
+              Airports you've starred for quick access
+            </CardDescription>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {favoriteAirports.map((icaoCode) => (
-            <FavoriteAirportCard
-              key={icaoCode}
-              icaoCode={icaoCode}
-              onRemove={toggleFavorite}
-            />
-          ))}
-        </div>
-      )}
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-blue-500" />
+              Recent Airports
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{isMounted ? recentAirports.length : 0}</div>
+            <CardDescription className="mt-1">
+              Airports you've viewed recently
+            </CardDescription>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Quick Actions */}
-      {favoriteAirports.length > 0 && (
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/airports">
-                  <Button variant="outline">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Add More Airports
-                  </Button>
-                </Link>
-                <Link href="/flights">
-                  <Button variant="outline">
-                    <Plane className="h-4 w-4 mr-2" />
-                    Track Live Flights
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Main Content */}
+      {isDataLoading ? (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner text="Loading your airports..." />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-3">
+            <LocationList
+              airports={favoriteAirportData}
+              title="My Airports"
+              height="600px"
+              useGlobalState={true}
+              showTabs={true}
+            />
+          </div>
         </div>
       )}
     </div>

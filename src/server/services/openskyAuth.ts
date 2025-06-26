@@ -10,14 +10,14 @@ const TOKEN_REFRESH_BUFFER = 5 * 60 * 1000 // Refresh 5 minutes before expiry
 const TOKEN_LOCK_TTL = 30 // Lock for 30 seconds during token fetch
 
 // OAuth2 configuration from environment
-const OPENSKY_CLIENT_ID = process.env.VITE_OPENSKY_CLIENT_ID
-const OPENSKY_CLIENT_SECRET = process.env.VITE_OPENSKY_CLIENT_SECRET
-const OPENSKY_AUTH_URL = process.env.VITE_OPENSKY_AUTH_URL || 
+const OPENSKY_CLIENT_ID = process.env.OPENSKY_CLIENT_ID || process.env.VITE_OPENSKY_CLIENT_ID
+const OPENSKY_CLIENT_SECRET = process.env.OPENSKY_CLIENT_SECRET || process.env.VITE_OPENSKY_CLIENT_SECRET
+const OPENSKY_AUTH_URL = process.env.OPENSKY_AUTH_URL || process.env.VITE_OPENSKY_AUTH_URL || 
   'https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token'
 
 // Legacy Basic Auth fallback
-const OPENSKY_USERNAME = process.env.VITE_OPENSKY_USERNAME
-const OPENSKY_PASSWORD = process.env.VITE_OPENSKY_PASSWORD
+const OPENSKY_USERNAME = process.env.OPENSKY_USERNAME || process.env.VITE_OPENSKY_USERNAME
+const OPENSKY_PASSWORD = process.env.OPENSKY_PASSWORD || process.env.VITE_OPENSKY_PASSWORD
 
 interface TokenResponse {
   access_token: string
@@ -202,6 +202,13 @@ class OpenSkyAuthService {
     if (this.hasOAuth2Credentials()) return 'oauth2'
     if (this.hasBasicAuthCredentials()) return 'basic'
     return 'none'
+  }
+
+  /**
+   * Check if any authentication method is available
+   */
+  async isAuthenticated(): Promise<boolean> {
+    return this.hasOAuth2Credentials() || this.hasBasicAuthCredentials()
   }
 }
 

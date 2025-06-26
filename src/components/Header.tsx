@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Clock, Heart, Home, MapPin, Menu, Monitor, Moon, Plane, Settings, Sun, X } from 'lucide-react'
+import { Clock, Heart, Home, Map, MapPin, Menu, Monitor, Moon, Plane, Settings, Sun, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/use-theme'
@@ -23,6 +23,7 @@ export function Header() {
     { href: '/', label: 'Home', icon: Home },
     { href: '/airports', label: 'Airports', icon: MapPin },
     { href: '/flights', label: 'Live Flights', icon: Plane },
+    { href: '/flights/map', label: 'Flight Map', icon: Map },
     { href: '/favorites', label: 'My Airports', icon: Heart },
     { href: '/settings', label: 'Settings', icon: Settings },
   ]

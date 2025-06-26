@@ -51,8 +51,9 @@ export const airportsApi = {
         
         if (response.ok) {
           const data = await response.json()
-          console.log(`Airport ${iataCode} fetched from ${data.source || 'server'}`)
-          return data.airport || null
+          console.log(`Airport ${iataCode} fetched from server`)
+          // Backend returns airport data directly, not wrapped in an object
+          return data
         }
       } catch (error) {
         console.error('Server API failed, falling back to client API:', error)
@@ -76,8 +77,9 @@ export const airportsApi = {
         
         if (response.ok) {
           const data = await response.json()
-          console.log(`Airport ${icaoCode} fetched from ${data.source || 'server'}`)
-          return data.airport || null
+          console.log(`Airport ${icaoCode} fetched from server`)
+          // Backend returns airport data directly, not wrapped in an object
+          return data
         }
       } catch (error) {
         console.error('Server API failed, falling back to client API:', error)

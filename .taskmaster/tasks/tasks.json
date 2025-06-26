@@ -744,8 +744,8 @@
               2,
               3
             ],
-            "details": "Use efficient marker creation and updating techniques, consider using canvas rendering for better performance",
-            "status": "pending",
+            "details": "Use efficient marker creation and updating techniques, consider using canvas rendering for better performance\n<info added on 2025-06-26T06:22:29.576Z>\nImplemented flight-marker rendering optimizations:\n• Introduced a global icon cache (max 720 entries) with automatic cleanup to curb memory growth.  \n• Rounded heading to 5-degree buckets, dramatically lowering the number of unique icon variants.  \n• Wrapped FlightMarker in a memoized component with a custom comparison function to skip redundant renders.  \n• Refactored state management so markers re-render only when the corresponding flight’s data actually changes.  \n• Applied performance flags (riseOnHover=false, autoPanOnFocus=false) to reduce map engine overhead.  \n• Retained preferCanvas=true to keep using high-performance canvas rendering.\n\nThese changes collectively cut re-render frequency and memory usage while preserving smooth, real-time tracking for thousands of flights.\n</info added on 2025-06-26T06:22:29.576Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -756,8 +756,8 @@
               3,
               4
             ],
-            "details": "Use polylines or curve representations to show flight routes, optimize for performance with large numbers of paths",
-            "status": "pending",
+            "details": "Use polylines or curve representations to show flight routes, optimize for performance with large numbers of paths\n<info added on 2025-06-26T06:45:54.880Z>\nCompleted implementation of flight path visualisation and supporting infrastructure:\n\n• Added `/app/flights/map/page.tsx` providing live map at `/flights/map`, with header and list-page navigation links.  \n• Implemented `FlightPath` component (Leaflet Polyline) featuring altitude-based colour gradient (green→yellow→red), Douglas-Peucker simplification, and segmented rendering per altitude band for performance.  \n• Extended `FlightDataStore` with track Maps, auto-cleanup, and API: `setFlightTrack`, `getFlightTrack`, `hasFlightTrack`, `removeFlightTrack`, plus configurable size/age limits.  \n• Introduced `useFlightTrack` hook to retrieve flight history from backend.  \n• Integrated track fetching and path rendering into `FlightMapView`; tracks load on aircraft selection and render beneath markers, with memoised optimisation.  \n\nSubtask marked complete—live flight map now streams real-time positions and visualises historical paths seamlessly.\n</info added on 2025-06-26T06:45:54.880Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -2056,11 +2056,127 @@
             "testStrategy": "Push a branch with a deliberately failing spec; verify workflow fails, uploads artifacts, and GitHub UI shows JUnit annotations. Remove failure and confirm green build."
           }
         ]
+      },
+      {
+        "id": 19,
+        "title": "Fix OpenSky Arrivals Endpoint & Enhance Flight-API Error Handling",
+        "description": "Resolve the 404 error returned by the OpenSky arrivals endpoint, ensure correct authentication/parameters are sent, and surface actionable error messages for missing data or API failures.",
+        "details": "1. Reproduce the Issue\n   • Use an airport known to have recent traffic (e.g., KJFK) and time range (last 6h) to confirm 404 on /arrivals.\n\n2. Endpoint & Parameter Audit\n   • Verify REST path should be `/flights/arrival` (singular) while departures is `/flights/departure`.\n   • Required query params: `airport` (ICAO), `begin`, `end` (UNIX UTC, max 7-day span, begin < end ≤ now).\n   • 404 is returned if path is incorrect; 400 for bad params; empty array (200) when no flights.\n\n3. Authentication Fix\n   • OpenSky rate-limits anonymous calls; authenticated requests use HTTP Basic Auth.\n   • Extend `OpenSkyApiService` (created in Task 4) to inject `auth: { username, password }` read from `OPENSKY_USERNAME` and `OPENSKY_PASSWORD` envs.\n   • Fall back to unauthenticated mode but warn via console if creds absent.\n\n4. Service Refactor\n   • Split existing `getFlightsByAirport()` into two explicit functions:\n       getAirportDepartures(icao: string, begin: number, end: number)\n       getAirportArrivals(icao: string, begin: number, end: number)\n   • Add type definitions for response array of `OpenSkyFlight`.\n\n5. Edge-Case Handling Layer\n   • Intercept 404 → check if caused by wrong path vs. path correct but no data (use regex match or stub call to /arrival with valid params to confirm). If latter, normalise to empty array.\n   • Map HTTP codes to custom error enum: {\n       NO_DATA, AUTH_REQUIRED, RATE_LIMITED, INVALID_PARAMS, NETWORK, UNKNOWN\n     }\n   • Expose domain-specific `FlightApiError` objects containing `code`, `userMessage`, and `actionHint`.\n\n6. UI/Error Messaging\n   • Where Airport Explorer or other components consume arrivals, display contextual notice: “No recent arrival data found for LHR in the last 6 hours.” vs. “OpenSky credentials missing – please configure API keys.”\n   • Provide link to settings or docs.\n\n7. Logging & Monitoring\n   • Emit `warn` level logs through Winston (Task 14 will collect) when falling back to unauth mode or when OpenSky returns 429.\n\n8. Documentation Update\n   • Update `docs/opensky.md` with correct endpoints, auth instructions, examples, and error matrix.\n\n9. Compatibility & Cleanup\n   • Retain previous departures logic; ensure any callers are updated to the new arrivals function signature.\n   • Run `npm run lint && npm run typecheck`.\n\n10. Deliverables\n   • Updated service file `src/api/opensky.ts` + types.\n   • New/updated unit tests in `__tests__/api/opensky.spec.ts`.\n   • Storybook or component snapshot updates for UI error states.\n   • Docs and `.env.example` additions.",
+        "testStrategy": "1. Unit Tests (Jest + nock)\n   a. Successful arrivals fetch → returns array length > 0.\n   b. 404 because of wrong path → getAirportArrivals throws FlightApiError(code = INVALID_PARAMS).\n   c. 404 with correct path but empty array → returns [].\n   d. 401/403 when no auth → throws AUTH_REQUIRED.\n   e. 429 response → throws RATE_LIMITED.\n   f. Network timeout → retries (existing interceptor) then throws NETWORK.\n\n2. Integration Test (optional, skipped in CI)\n   • Hit live OpenSky with real creds for a recent timeframe; expect status 200.\n\n3. Component/UX Tests (React Testing Library)\n   • Mock arrivals error → verify user-friendly banner text.\n   • Mock no-data → verify empty-state illustration appears.\n\n4. End-to-End (Cypress, depends on Task 18 once merged)\n   • Search airport → Arrivals tab shows “No data” without crashing.\n\n5. Documentation Verification\n   • Spell-check and link-check `docs/opensky.md`.\n\n6. Regression Suite\n   • Ensure departures flow still passes all previous tests.",
+        "status": "pending",
+        "dependencies": [
+          4
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Build Individual Flight Tracking Page (/app/flights/[icao24]/page.tsx)",
+        "description": "Create a dynamic route that renders a fully-featured flight detail page with real-time updates, historical track visualisation, aircraft/airport data, graphs, and a focused map view.",
+        "details": "1. Routing & File Structure\n   • Under TanStack Router’s flights route, add a child route `flights/$icao24` and place the component in `/app/flights/[icao24]/page.tsx`.\n   • Accept route param `icao24` (lower-case hex). Validate with regex /^[0-9a-f]{6}$/; redirect to /flights on failure.\n\n2. Data Layer\n   • Create `useFlightQuery(icao24)` that wraps Task-4 OpenSky endpoints:\n       – `/states/all?icao24=` for current position (poll fallback 10 s).\n       – `/tracks/all?icao24=` for historical path (24 h window).\n       – Aircraft meta endpoint already exposed in Task 7.\n   • Expose `useFlightWebSocket(icao24)` hook that reuses the global WS connection from Task 7 but filters messages by `icao24`. Fallback to HTTP polling if WS drops >3 times.\n   • Normalise data into `{ position, history[], aircraftInfo, departure, arrival }` in TanStack Query cache so other views can reuse it.\n\n3. UI Composition\n   • Layout: Header + main 2-column grid (lg) / stacked (sm).\n   • Left:\n       – <MapContainer> centred on latest position, minZoom 3, maxZoom 12.\n       – <Polyline> for history; colour by altitude gradient (blue→red).\n       – Marker icon = aircraft silhouette rotated to track heading.\n   • Right (scrollable panel):\n       – AircraftCard (callsign, model, registration, airline logo).\n       – DepartureArrivalCard with airport names, country flags, sched/actual times.\n       – Altitude & Ground-speed graphs: Recharts <LineChart> (altitude ft, speed kt vs timestamp). Lazy-load with React.lazy.\n       – Metadata list: vertical speed, squawk, last update age, etc.\n   • UX States:\n       – Skeleton loaders while queries fetch.\n       – Inline ErrorMessage component on 4xx/5xx.\n       – Empty state for flights that have already landed (>1 h no position).\n\n4. Real-Time Update Flow\n   • On WS message for this flight:\n       – Push new point onto history array (limit 2 000 points / 2 h).\n       – Update marker position, centre map if user hasn’t manually panned in last 15 s.\n       – Animate Recharts graphs with `syncId=\"flightCharts\"`.\n   • Debounce UI refresh to 500 ms to avoid thrashing.\n\n5. Performance & Cleanup\n   • Memoise heavy components (map, graphs) with React.memo.\n   • Use `@tanstack/react-virtual` for long history tables (if added later).\n   • On unmount, unsubscribe WS, cancel queries, and clear interval timers.\n   • Add `vite` code-splitting comment for the page chunk.\n\n6. Accessibility & Responsiveness\n   • Ensure colour contrast for altitude line gradient (WCAG AA).\n   • Map controls keyboard-navigable; graphs have descriptive aria-labels.\n   • Test on sm (375 px), md (768 px), lg (1280 px) breakpoints.\n\n7. Documentation\n   • Update `docs/routes.md` with new path and param description.\n   • Add README snippet on \"Individual Flight Tracking\" including environment variables needed (e.g., WS URL override).",
+        "testStrategy": "1. Unit Tests (Jest + RTL)\n   a. `useFlightQuery` returns cached value on second call.\n   b. `useFlightWebSocket` filters messages correctly (mock WS).\n   c. AltitudeGraph renders correct series lengths.\n\n2. Component Tests\n   • Render page with MSW mocks delivering: success, error 404, and empty history.\n   • Assert skeletons, errors, and empty state appear as expected.\n\n3. Integration / UI Tests (Cypress – depends on Task 18 setup)\n   a. Visit `/flights/abc123`, wait for initial data, verify map marker exists and side-panel shows callsign.\n   b. Simulate WS message via cy.task('sendWs') and confirm marker moves and graphs update in <1 s.\n   c. Resize viewport to 375 px and confirm responsive stacking.\n\n4. Accessibility Audit\n   • Run `cypress-axe` on the page; zero violations of critical severity.\n\n5. Performance\n   • Lighthouse perf score ≥ 90 on cold load (with network throttling), ensure bundle for this route ≤ 150 KB gzipped.\n   • Confirm memory usage stable after 10 min of continuous real-time updates (no leaks via Chrome DevTools).",
+        "status": "pending",
+        "dependencies": [
+          3,
+          4,
+          7
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Dynamic Route & Param Validation",
+            "description": "Add child route flights/$icao24 under TanStack Router, create page file /app/flights/[icao24]/page.tsx, read param icao24, validate against /^[0-9a-f]{6}$/ and redirect to /flights when invalid.",
+            "dependencies": [],
+            "details": "• Extend router config with { path: 'flights/$icao24', element: <FlightPage /> }.\n• Inside page component, use router.useParams() to obtain icao24.\n• Perform regex check in useEffect; on failure navigate('/flights', { replace:true }).\n• Export lazy-loaded component with /* @vite-ignore */ comment for future splitting.",
+            "status": "pending",
+            "testStrategy": "Navigate to /flights/abcdef (valid) → page renders ; /flights/xyz → redirected."
+          },
+          {
+            "id": 2,
+            "title": "Implement useFlightQuery Hook",
+            "description": "Fetch initial flight data (current position, 24 h track, aircraft info, dep/arr airports) and normalise into unified object in TanStack Query cache.",
+            "dependencies": [
+              1
+            ],
+            "details": "• Wrap Task-4 endpoints: states/all?icao24=, tracks/all?icao24=.\n• Compose additional queries to aircraft meta endpoint and airports.\n• Shape returned data: { position, history, aircraftInfo, departure, arrival }.\n• Poll states endpoint every 10 s unless WS active; expose option to pause polling.\n• Memoise selectors so other components can subscribe efficiently.",
+            "status": "pending",
+            "testStrategy": "Unit test with msw to mock HTTP responses; ensure cache entry keys by ['flight', icao24]."
+          },
+          {
+            "id": 3,
+            "title": "Develop useFlightWebSocket Hook & Real-Time Update Flow",
+            "description": "Reuse global WebSocket, filter by icao24, push updates to TanStack Query cache, fallback to HTTP polling after 3 consecutive drops, debounce UI refresh to 500 ms.",
+            "dependencies": [
+              2
+            ],
+            "details": "• Subscribe to onmessage; if msg.icao24===target, dispatch queryClient.setQueryData to append point & update position.\n• Maintain dropCount; onclose increment, if >3 call setWsDisabled(true) causing polling to resume.\n• Use lodash.debounce around update callbacks.\n• Return { livePosition, isWsActive } to consumers.",
+            "status": "pending",
+            "testStrategy": "Integration test with mocked WebSocket server emitting sample messages and forced closures."
+          },
+          {
+            "id": 4,
+            "title": "Build FlightMap Component",
+            "description": "Render Leaflet map centred on latest position, draw altitude-gradient polyline for history, display rotated aircraft marker, auto-centre unless user pans within 15 s.",
+            "dependencies": [
+              3
+            ],
+            "details": "• Use react-leaflet <MapContainer> with minZoom 3 maxZoom 12.\n• Convert history points to LatLng[]; generate color stops based on altitude range using chroma.js.\n• Use useRef to track lastUserPan timestamp via map.on('drag').\n• In useEffect, when livePosition changes and Date.now()-lastUserPan>15000, panTo.\n• Memoise polyline and marker layers with React.memo.",
+            "status": "pending",
+            "testStrategy": "Render with storybook using mock data; visually confirm polyline gradient and marker rotation."
+          },
+          {
+            "id": 5,
+            "title": "Build Right-Panel Detail Components",
+            "description": "Create AircraftCard, DepartureArrivalCard, AltitudeLineChart, SpeedLineChart, and MetadataList with skeletons, error, and empty-landed states.",
+            "dependencies": [
+              3
+            ],
+            "details": "• Cards use Material-UI Paper; fetch airline logo via existing util.\n• Charts via Recharts <LineChart> with syncId='flightCharts'; lazy-load with React.lazy.\n• For Empty state: if Date.now() - lastPosition.ts > 3600 000 show landed message.\n• Provide <ErrorMessage> component for query errors.",
+            "status": "pending",
+            "testStrategy": "Jest snapshot tests for each component under loading, success, error, empty."
+          },
+          {
+            "id": 6,
+            "title": "Compose FlightPage Layout",
+            "description": "Combine FlightMap and right-panel components into responsive grid, wire data from hooks, and handle skeleton/error propagation.",
+            "dependencies": [
+              4,
+              5
+            ],
+            "details": "• Use CSS grid with grid-cols-12 (tailwind) ; lg: Map spans 8 cols, panel 4 ; sm: stack vertically.\n• Wrap content in <Suspense fallback={<SkeletonPage />}>.\n• Pass query data and websocket status as props.\n• Ensure graphs update via shared syncId.",
+            "status": "pending",
+            "testStrategy": "Cypress E2E: visit valid flight page, toggle viewport sizes, confirm layout and live updates."
+          },
+          {
+            "id": 7,
+            "title": "Performance Optimisation & Cleanup",
+            "description": "Memoise heavy components, virtualise future history lists, ensure cleanup of WS subscriptions, query cancellations, intervals, and add Vite code-splitting hints.",
+            "dependencies": [
+              6
+            ],
+            "details": "• Wrap FlightMap, charts, and large cards in React.memo with prop comparisons.\n• On FlightPage unmount, call ws.unsubscribe, queryClient.removeQueries(['flight', icao24], { exact:false }).\n• Add /* webpackChunkName: \"flight-page\" */ comment to dynamic import.\n• Prepare react-virtual wrapper for any table when implemented.",
+            "status": "pending",
+            "testStrategy": "React Profiler comparison before/after; verify no memory leaks via Jest fake timers."
+          },
+          {
+            "id": 8,
+            "title": "Accessibility, Responsiveness & Documentation",
+            "description": "Finalize WCAG AA compliance, keyboard navigation, aria labels, breakpoint testing, and update project docs.",
+            "dependencies": [
+              7
+            ],
+            "details": "• Use colour-blind safe gradient; test with axe-core.\n• Add role='img' aria-label to map and aria-description to graphs.\n• Ensure Tab key focuses map controls.\n• Test on 375, 768, 1280 px via Storybook Viewports.\n• Update docs/routes.md and README with new path, param, and env var notes.",
+            "status": "pending",
+            "testStrategy": "Run jest-axe on rendered page; manual keyboard navigation; Lighthouse audits for accessibility and performance."
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-06-23T15:39:17.490Z",
-      "updated": "2025-06-25T09:31:26.024Z",
+      "updated": "2025-06-26T07:00:44.566Z",
       "description": "Tasks for master context"
     }
   }
