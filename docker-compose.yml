@@ -1,11 +1,12 @@
 version: '3.8'
 
 services:
+  # Redis Cache Service
   redis:
     image: redis:7-alpine
     container_name: airport-db-redis
     ports:
-      - "9021:6379"
+      - '9021:6379'
     volumes:
       - redis-data:/data
     command: >
@@ -15,25 +16,100 @@ services:
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - airport-network
+
+  # Airport Database Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - OPENSKY_API_URL=${OPENSKY_API_URL:-https://opensky-network.org/api}
+        - API_NINJAS_API_URL=${API_NINJAS_API_URL:-https://api.api-ninjas.com/v1}
+    container_name: airport-db-app
+    ports:
+      - '3000:3000'
+    environment:
+      # Node Environment
+      - NODE_ENV=production
+
+      # API Configuration
+      - VITE_OPENSKY_API_URL=${VITE_OPENSKY_API_URL:-https://opensky-network.org/api}
+      - VITE_OPENSKY_AUTH_URL=${VITE_OPENSKY_AUTH_URL:-https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token}
+      - VITE_API_NINJAS_API_URL=${VITE_API_NINJAS_API_URL:-https://api.api-ninjas.com/v1}
+
+      # API Keys (Required)
+      - VITE_API_NINJAS_API_KEY=${VITE_API_NINJAS_API_KEY}
+      - VITE_OPENSKY_CLIENT_ID=${VITE_OPENSKY_CLIENT_ID}
+      - VITE_OPENSKY_CLIENT_SECRET=${VITE_OPENSKY_CLIENT_SECRET}
+
+      # Optional API Keys
+      - VITE_AVIATIONSTACK_KEY=${VITE_AVIATIONSTACK_KEY}
+      - VITE_MAPBOX_TOKEN=${VITE_MAPBOX_TOKEN}
+
+      # Redis Configuration (using internal Docker network)
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USERNAME=${REDIS_USERNAME:-airport-app}
+
+      # Redis Security (Optional)
+      - REDIS_TLS_ENABLED=${REDIS_TLS_ENABLED:-false}
+      - REDIS_TLS_REJECT_UNAUTHORIZED=${REDIS_TLS_REJECT_UNAUTHORIZED:-true}
+
+      # Secrets Management
+      - SECRETS_SOURCE=${SECRETS_SOURCE:-env}
+      - SECRETS_ENCRYPTION_KEY=${SECRETS_ENCRYPTION_KEY}
+
+      # Rate Limiting Configuration
+      - RATE_LIMIT_FAIL_CLOSED=${RATE_LIMIT_FAIL_CLOSED:-true}
+      - REDIS_CIRCUIT_FAILURE_THRESHOLD=${REDIS_CIRCUIT_FAILURE_THRESHOLD:-5}
+      - REDIS_CIRCUIT_RESET_TIMEOUT=${REDIS_CIRCUIT_RESET_TIMEOUT:-60000}
+      - REDIS_CIRCUIT_HALF_OPEN_REQUESTS=${REDIS_CIRCUIT_HALF_OPEN_REQUESTS:-3}
+
+      # Cache Configuration
+      - AIRPORT_CACHE_TTL=${AIRPORT_CACHE_TTL:-2592000}
+      - USE_IN_MEMORY_CACHE_FALLBACK=${USE_IN_MEMORY_CACHE_FALLBACK:-true}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/airports']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - airport-network
 
   # Optional: Redis Commander for GUI management (development only)
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: airport-db-redis-commander
     ports:
-      - "8081:8081"
+      - '8081:8081'
     environment:
-      - REDIS_HOSTS=local:redis:6379  # This remains 6379 as it's the internal container port
+      - REDIS_HOSTS=local:redis:6379 # This remains 6379 as it's the internal container port
     depends_on:
       - redis
     profiles:
       - dev
+    networks:
+      - airport-network
 
 volumes:
   redis-data:
     driver: local
+
+networks:
+  airport-network:
+    driver: bridge
