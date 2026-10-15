@@ -1,8 +1,18 @@
 // React hook for cache management and monitoring
 
 import { useState, useEffect, useCallback } from 'react'
-import { getCache, getCacheSync, type CacheStats, type CacheEvent } from '@/lib/cache'
-import { getCacheStats, invalidateCache, prefetch } from '@/api/cachedFetch'
+
+export interface CacheStats {
+  hitRate: number
+  hits: number
+  misses: number
+  staleHits: number
+  errors: number
+  entries: number
+  size: number
+  lastReset: string
+  avgResponseTime: number | null
+}
 
 export interface UseCacheOptions {
   autoRefreshStats?: boolean
@@ -13,73 +23,35 @@ export function useCache(options: UseCacheOptions = {}) {
   const { autoRefreshStats = true, refreshInterval = 5000 } = options
   const [stats, setStats] = useState<CacheStats | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const cache = getCacheSync()
 
-  // Fetch cache statistics
+  // Fetch cache statistics from backend API
   const refreshStats = useCallback(async () => {
     try {
-      const newStats = await getCacheStats()
-      setStats(newStats)
+      const response = await fetch('/api/cache/stats')
+      if (response.ok) {
+        const newStats = await response.json()
+        setStats(newStats)
+      }
     } catch (error) {
       console.error('Failed to fetch cache stats:', error)
     }
   }, [])
 
-  // Clear cache
-  const clearCache = useCallback(async (pattern?: string) => {
+  // Clear cache via backend API
+  const clearCache = useCallback(async () => {
     setIsLoading(true)
     try {
-      const cleared = await invalidateCache(pattern)
-      await refreshStats()
-      return cleared
+      const response = await fetch('/api/cache/stats', { method: 'DELETE' })
+      if (response.ok) {
+        const result = await response.json()
+        await refreshStats()
+        return result.cleared
+      }
+      return 0
     } finally {
       setIsLoading(false)
     }
   }, [refreshStats])
-
-  // Prefetch data
-  const prefetchData = useCallback(async (urls: string[]) => {
-    setIsLoading(true)
-    try {
-      await Promise.all(urls.map(url => prefetch(url)))
-      await refreshStats()
-    } finally {
-      setIsLoading(false)
-    }
-  }, [refreshStats])
-
-  // Warmup cache from IndexedDB
-  const warmupCache = useCallback(async (keys: string[]) => {
-    setIsLoading(true)
-    try {
-      await cache.warmup(keys)
-      await refreshStats()
-    } finally {
-      setIsLoading(false)
-    }
-  }, [cache, refreshStats])
-
-  // Subscribe to cache events
-  useEffect(() => {
-    const unsubscribers: Array<() => void> = []
-
-    // Update stats on cache events
-    const events: Array<'hit' | 'miss' | 'set' | 'delete' | 'clear'> = [
-      'hit', 'miss', 'set', 'delete', 'clear'
-    ]
-
-    events.forEach(event => {
-      const unsubscribe = cache.on(event, () => {
-        // Debounce stats refresh
-        setTimeout(refreshStats, 100)
-      })
-      unsubscribers.push(unsubscribe)
-    })
-
-    return () => {
-      unsubscribers.forEach(unsub => unsub())
-    }
-  }, [cache, refreshStats])
 
   // Auto-refresh stats
   useEffect(() => {
@@ -95,8 +67,6 @@ export function useCache(options: UseCacheOptions = {}) {
     stats,
     isLoading,
     clearCache,
-    prefetchData,
-    warmupCache,
     refreshStats,
   }
 }

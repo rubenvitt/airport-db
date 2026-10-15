@@ -47,6 +47,12 @@ export function useAirportExplorer({ initialCode = '' }: UseAirportExplorerOptio
   const searchResult = airportByIATA || airportByICAO
   const searchResults = searchResult ? [searchResult] : []
   
+  // Debug logging
+  console.log('useAirportExplorer - airportByIATA:', airportByIATA)
+  console.log('useAirportExplorer - airportByICAO:', airportByICAO)
+  console.log('useAirportExplorer - searchResult:', searchResult)
+  console.log('useAirportExplorer - searchResults:', searchResults)
+  
   // The selected airport is either from global state or local state
   const selectedAirport = mapState.selectedAirport || localSelectedAirport
   

@@ -122,7 +122,7 @@ export function CacheAnalytics() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="text-sm">
-                {formatDistanceToNow(stats.lastReset, { addSuffix: true })}
+                {formatDistanceToNow(new Date(stats.lastReset), { addSuffix: true })}
               </div>
             </div>
           </div>

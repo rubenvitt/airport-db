@@ -90,11 +90,15 @@ export async function GET(
       }
     }
     
-    return NextResponse.json({
-      airport,
-      source: cached ? 'cache' : 'api',
-      cached
-    })
+    if (!airport) {
+      return NextResponse.json(
+        { error: 'Airport not found' },
+        { status: 404 }
+      )
+    }
+    
+    // Return airport data directly for compatibility with frontend
+    return NextResponse.json(airport)
     
   } catch (error) {
     console.error('Error in airport by code API:', error)

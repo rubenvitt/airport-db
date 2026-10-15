@@ -33,6 +33,14 @@ export default function AirportsExplorer() {
     mapState,
   } = useAirportExplorer({ initialCode })
   
+  // Debug logging
+  useEffect(() => {
+    console.log('AirportsExplorer - searchQuery:', searchQuery)
+    console.log('AirportsExplorer - searchResults:', searchResults)
+    console.log('AirportsExplorer - isLoading:', isLoading)
+    console.log('AirportsExplorer - error:', error)
+  }, [searchQuery, searchResults, isLoading, error])
+  
   // Update URL when search query changes
   useEffect(() => {
     const params = new URLSearchParams()
